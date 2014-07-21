@@ -3,7 +3,7 @@ import java.util.ArrayList;
 import JaCoP.core.*; 
 import JaCoP.constraints.*; 
 import JaCoP.search.*; 
- 
+//yang b she jing le
 public class test { 
  
     static test m = new test (); 
