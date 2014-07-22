@@ -1,23 +1,28 @@
 import java.util.Scanner;
 
 
-public class LC {
 
+public class LC {
+	
 	/**
 	 * @param args
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args){
 		LC lc  = new LC();
 		System.out.print("Please input a term: ");
 		Scanner sc = new Scanner(System.in);
 	    String input = sc.nextLine();
         Term newTerm = lc.toTerm(input);
+        
+        System.out.println(newTerm.tostring());
+        /*
         int n = 50;
         while(n-- > 0){
-        	newTerm = newTerm.evaluate();
+        	newTerm = newTerm.evaluateNormal();
         }
-        System.out.println(newTerm.tostring());
-        System.out.println("Reducted to:" + newTerm.evaluate().tostring());
+        */
+        newTerm = newTerm.evaluateNormal();
+        System.out.println("Reducted to:" + newTerm.tostring());
         
 	}
 	
@@ -165,15 +170,5 @@ public class LC {
 			return input.substring(1);
 		}
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	
 }

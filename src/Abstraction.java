@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.Iterator;
 
 
 public class Abstraction implements Term{
@@ -43,7 +42,18 @@ public class Abstraction implements Term{
 	}
 
 	@Override
-	public Term evaluate() {
-		return new Abstraction(this.name, toTerm.evaluate());
+	public Term evaluateNormal() {
+		return new Abstraction(this.name, toTerm.evaluateNormal());
+	}
+
+	@Override
+	public boolean equals(Term t) {
+		if(t instanceof Abstraction){
+			return this.name == ((Abstraction)t).getName() && this.toTerm.equals(((Abstraction)t).getTerm());
+		}
+		else{
+			return false;
+		}
+		
 	}
 }

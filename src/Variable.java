@@ -36,7 +36,18 @@ public class Variable implements Term{
 	}
 
 	@Override
-	public Term evaluate() {
+	public Term evaluateNormal() {
 		return this;	
 	} 
+	
+
+	public boolean equals(Term t){
+		if(t instanceof Variable){
+			return this.name == ((Variable)t).getName();
+		}
+		else{
+			return false;
+		}
+	}
+	
 }

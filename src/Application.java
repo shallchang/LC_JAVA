@@ -29,7 +29,7 @@ public class Application implements Term {
 	
 	@Override
 	public String tostring() {
-		return "App{ " + this.operator.tostring() + this.operand.tostring()+"}";
+		return this.operator.tostring() + this.operand.tostring();
 	}
 
 	@Override
@@ -40,24 +40,34 @@ public class Application implements Term {
 	}
 
 	@Override
-	public Term evaluate() {
+	public Term evaluateNormal() {
+		if(this.operator instanceof Abstraction){
+			Term newterm = substitution(((Abstraction)this.operator).getTerm(), new Variable(((Abstraction)this.operator).getName()), this.operand);
+			System.out.println("==> "+ newterm.tostring());
+			return newterm;
+		}
+		else{
+			Term newterm = new Application(this.operator.evaluateNormal(), this.operand.evaluateNormal());
+			//System.out.println("=> "+ newterm.tostring());
+			return newterm;
+		}
+		
+		
+		
+		/*
 		if(this.operator instanceof Application){
-			System.out.println("eva: " + this.operator.tostring() + " || " + this.operand.tostring());
-			return new Application(this.operator.evaluate(), this.operand.evaluate());
+			return new Application(this.operator.evaluateNormal(), this.operand.evaluateNormal());
 		}
 		else if(this.operator instanceof Abstraction){
-			System.out.println(this.tostring());
-			System.out.println("Sub: "+ ((Abstraction)this.operator).getTerm().tostring() +  " "+((Abstraction)this.operator).getName() + " "+this.operand.tostring());
-			
-			
-			return substitution(((Abstraction)this.operator).getTerm(), new Variable(((Abstraction)this.operator).getName()), this.operand.evaluate());
+			return substitution(((Abstraction)this.operator).getTerm(), new Variable(((Abstraction)this.operator).getName()), this.operand.evaluateNormal());
 		}
 		else if(this.operator instanceof Variable){
-			return new Application(this.operator, this.operand.evaluate());
+			return new Application(this.operator, this.operand.evaluateNormal());
 		}
 		else{
 			throw new IllegalArgumentException("Null data type");
 		}
+		*/
 	}
 	
 	
@@ -99,11 +109,21 @@ public class Application implements Term {
 			Application app = (Application)original;
 			Term t1 = substitution(app.getOperator(), subfrom, subto);
 			Term t2 = substitution(app.getOperand(), subfrom, subto);
-			return (new Application(t1, t2)).evaluate();
+			return (new Application(t1, t2));
 		}
 		else{
 			throw new IllegalArgumentException("None type");
 		}
 		
+	}
+
+	@Override
+	public boolean equals(Term t) {
+		if(t instanceof Application){
+			return this.operator.equals(((Application)t).getOperator()) && this.operand.equals(((Application)t).getOperand());
+		}
+		else{
+			return false;
+		}
 	}
 }
