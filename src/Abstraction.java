@@ -56,4 +56,9 @@ public class Abstraction implements Term{
 		}
 		
 	}
+
+	@Override
+	public Term evaluateCbn() {
+		return this;
+	}
 }

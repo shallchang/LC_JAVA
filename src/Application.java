@@ -29,7 +29,7 @@ public class Application implements Term {
 	
 	@Override
 	public String tostring() {
-		return this.operator.tostring() + this.operand.tostring();
+		return "("+this.operator.tostring() + this.operand.tostring()+")";
 	}
 
 	@Override
@@ -43,13 +43,16 @@ public class Application implements Term {
 	public Term evaluateNormal() {
 		if(this.operator instanceof Abstraction){
 			Term newterm = substitution(((Abstraction)this.operator).getTerm(), new Variable(((Abstraction)this.operator).getName()), this.operand);
-			System.out.println("==> "+ newterm.tostring());
 			return newterm;
 		}
 		else{
-			Term newterm = new Application(this.operator.evaluateNormal(), this.operand.evaluateNormal());
-			//System.out.println("=> "+ newterm.tostring());
-			return newterm;
+			if(this.operator.equals(this.operator.evaluateCbn())){
+				return new Application(this.operator, this.operand.evaluateNormal());
+			}
+			else{
+				return new Application(this.operator.evaluateCbn(), this.operand);
+			}
+			
 		}
 		
 		
@@ -124,6 +127,17 @@ public class Application implements Term {
 		}
 		else{
 			return false;
+		}
+	}
+
+	@Override
+	public Term evaluateCbn() {
+		if(this.operator instanceof Abstraction){
+			Term newterm = substitution(((Abstraction)this.operator).getTerm(), new Variable(((Abstraction)this.operator).getName()), this.operand);
+			return newterm;
+		}
+		else{
+			return this;
 		}
 	}
 }

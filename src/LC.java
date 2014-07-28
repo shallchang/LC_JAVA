@@ -1,5 +1,6 @@
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Scanner;
-
 
 
 public class LC {
@@ -7,6 +8,7 @@ public class LC {
 	/**
 	 * @param args
 	 */
+	
 	public static void main(String[] args){
 		LC lc  = new LC();
 		System.out.print("Please input a term: ");
@@ -21,10 +23,21 @@ public class LC {
         	newTerm = newTerm.evaluateNormal();
         }
         */
+        PPC ppc = lc.ppc(newTerm, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+        
+        
         newTerm = newTerm.evaluateNormal();
+        
+        
+        
         System.out.println("Reducted to:" + newTerm.tostring());
+        System.out.println("Context created: " + ppc.getSubject().tostring());
+        System.out.println("Type assigned:" + ppc.getPredicate().tostring());
         
 	}
+	
+	
+	
 	
 	
 	public Term toTerm(String input){
@@ -109,25 +122,17 @@ public class LC {
 	public String[] split(String left, String right, int n){
 		String new_left = init(left);
 		String new_right = last(left) + right;
-	
-		//System.out.println("Begin: " + left + " " + right);
 		
 		if(n==1 && last(left).equals("(")){
-			//System.out.println(1);
-			//System.out.println("split new: " + new_left + " " + new_right);
 			return new String[]{new_left, right};
 		}
 		else if(last(left).equals("(")){
-			//System.out.println(2);
-			//System.out.println("split new: " + new_left + " " + new_right);
 			return split(new_left, new_right, n-1);
 		}
 		else if(last(left).equals(")")){
-			//System.out.println(3);
 			return split(new_left, new_right, n+1);
 		}
 		else{
-			//System.out.println(4);
 			return split(new_left, new_right, n);
 		}
 	}
@@ -170,5 +175,224 @@ public class LC {
 			return input.substring(1);
 		}
 	}
+	
+	public Type typeSubs(TSub ts, Type type){
+		if(ts instanceof Sub){
+			if(type instanceof TVar){
+				if(((Sub) ts).getFrom().equals(type)){
+					return ((Sub) ts).getTo();
+				}
+				else{
+					return type;
+				}
+			}
+			else if(type instanceof TP){
+				return new TP(typeSubs(ts, ((TP) type).getHead()), typeSubs(ts, ((TP) type).getTail()));
+			}
+			else{
+				throw new IllegalArgumentException("Null type");
+			}
+		}
+		else if(ts instanceof So){
+			return So((So)ts, type);
+		}
+		else{
+			throw new IllegalArgumentException("Null type");
+		}
+	}
+	
+	public Type So(So so, Type type){
+		return typeSubs(so.getS1(), typeSubs(so.getS2(), type));
+	}
+	
+	
+	public Context contextSubs(TSub ts, Context context){
+		ArrayList<Statement> tmp = new ArrayList<>();
+
+		for(Statement statement: context.getContext()){
+			tmp.add(new Statement(statement.getSubject(), typeSubs(ts, statement.getPredicate())));
+		}
+
+		return new Context(tmp);
+
+	}
+	
+	
+	public TSub unify(Type first, Type second){
+		if(first instanceof TVar){
+			if(second instanceof TVar){
+				return new Sub((TVar)first, second);
+			}
+			else{
+				if(!occur(first, ((TP) second).getHead()) && !occur(first, ((TP)second).getTail())){
+					return new Sub((TVar)first, second);
+				}
+				else{
+					return new Sub(new TVar("A"), new TVar("A"));
+				}
+			}
+		}
+		else if(first instanceof TP){
+			if(second instanceof TVar){
+				return unify(second, first);
+			}
+			else{
+	            TSub s1 = unify(((TP) first).getHead(), ((TP) second).getHead());
+	            TSub s2 = unify(typeSubs(s1, ((TP) first).getTail()), typeSubs(s1, ((TP) second).getTail()));
+	            return new So(s1, s2);
+	     
+			}
+		}
+		else{
+			throw new IllegalArgumentException("Null type");
+		}
+		
+	}
+	
+	
+	public TSub unifyContext(Context first, Context second){
+		
+		if(first.getContext().size() == 0){
+			return new Sub(new TVar("A"), new TVar("A"));
+		}
+		
+		Statement hd = first.getContext().get(0);
+
+		ArrayList<Statement> tl = first.getContext();
+		tl.remove(0);
+		
+		
+		Statement target = search(hd.getSubject(), second);
+		if(!target.getPredicate().equals(new TVar(""))){
+			TSub s1 = unify(hd.getPredicate(), target.getPredicate());
+			TSub s2 = unifyContext(contextSubs(s1, new Context(tl)), contextSubs(s1, second));
+          
+			return new So(s2, s1);
+
+		}
+		
+		else{
+			return unifyContext(new Context(tl), second);	
+		}
+	}
+	
+	
+	public Statement search(Term term, Context context){
+		for(Statement sts: context.getContext()){
+			if(sts.getSubject().equals(term)){
+				return sts;
+			}
+		}
+		return new Statement(new Variable(' ' ), new TVar(""));
+	}
+	
+	
+	public boolean contains(Term term, Context context){
+		for(Statement sts: context.getContext()){
+			if(sts.getSubject().equals(term)){
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	
+	
+	
+	
+	
+	
+	public PPC ppc(Term term, String counter){
+		if(term instanceof Variable){
+			ArrayList<Statement> sts = new ArrayList<>();
+			Type type = new TVar(counter.substring(0, 1));
+			sts.add(new Statement(term, type));
+			
+			return new PPC(new Context(sts), type, counter.substring(1));
+			
+		}
+		else if(term instanceof Abstraction){
+			Variable xv = new Variable(((Abstraction) term).getName());
+			
+			PPC receiver = ppc(((Abstraction) term).getTerm(), counter);
+			
+			if(contains(xv, receiver.getSubject())){
+				Type searchType = search(xv, receiver.getSubject()).getPredicate();
+				ArrayList<Statement> original = receiver.getSubject().getContext();
+				
+				int i = 0;
+				for(Statement s: original){
+					if(s.getSubject().equals(xv)) break;
+					i++;
+				}
+				
+				original.remove(i);
+				
+				
+				TP tp = new TP(searchType, receiver.getPredicate());
+				
+				return new PPC(new Context(original), tp, receiver.getCounter());
+				
+			}
+			else{
+				System.out.println("HERE");
+				TVar f = new TVar(receiver.getCounter().substring(0, 1));
+				
+				
+				return new PPC(receiver.getSubject(), new TP(f, receiver.getPredicate()) , receiver.getCounter().substring(1));
+				
+			}
+			
+			
+		}
+		else{
+			TVar f = new TVar(counter.substring(0,1));
+			PPC receiver1 = ppc(((Application)term).getOperator(), counter.substring(1));
+			PPC receiver2 = ppc(((Application)term).getOperand(), receiver1.getCounter());
+			
+			System.out.println("r1: " + receiver1.getPredicate().tostring());
+			System.out.println("r2: " + receiver2.getPredicate().tostring());
+			
+			
+			TSub s1 = unify(receiver1.getPredicate(), new TP(receiver2.getPredicate(), f));
+			
+			TSub s2 = unifyContext(contextSubs(s1, receiver1.getSubject()), contextSubs(s1, receiver2.getSubject()));
+			
+			
+			ArrayList<Statement> tmp = receiver1.getSubject().getContext();
+			tmp.addAll(receiver2.getSubject().getContext());
+			Context union = new Context(tmp);
+			
+			
+			return new PPC(contextSubs(s2, contextSubs(s1, union)), typeSubs(s2, typeSubs(s1, f)), receiver2.getCounter());
+			
+		}
+		
+	}
+	
+	
+	
+	
+	public boolean occur(Type first, Type second){
+		if(first instanceof TVar){
+			if(second instanceof TP){
+				return occur(first, ((TP) second).getHead()) || occur(first, ((TP) second).getTail());
+			}
+			else{
+				if(((TVar) first).getName().length() == 1){
+					return ((TVar) second).getName().contains(((TVar) first).getName());
+				}
+				else{
+					throw new IllegalArgumentException("not 1");
+				}	
+			}
+		}
+		else{
+			return false;
+		}
+	}
+
+	
+	
 	
 }

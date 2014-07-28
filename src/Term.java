@@ -21,6 +21,8 @@ public interface Term {
 	
 	public Term evaluateNormal();
 	
+	public Term evaluateCbn();
+	
 	public boolean equals(Term t);
 
 }

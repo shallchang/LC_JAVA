@@ -28,19 +28,12 @@ public class Variable implements Term{
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-        if(this.name == ((Variable)obj).name){
-        	return true;
-        }
-       return false;		
-	}
-
-	@Override
 	public Term evaluateNormal() {
 		return this;	
 	} 
 	
 
+	@Override
 	public boolean equals(Term t){
 		if(t instanceof Variable){
 			return this.name == ((Variable)t).getName();
@@ -48,6 +41,11 @@ public class Variable implements Term{
 		else{
 			return false;
 		}
+	}
+
+	@Override
+	public Term evaluateCbn() {
+		return this;
 	}
 	
 }
