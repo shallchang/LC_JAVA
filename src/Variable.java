@@ -47,5 +47,14 @@ public class Variable implements Term{
 	public Term evaluateCbn() {
 		return this;
 	}
-	
+
+	@Override
+	public Term evaluateCbv() {
+		return this;
+	}
+
+	@Override
+	public Term headReduction() {
+		return this;
+	}
 }

@@ -21,7 +21,7 @@ public class Abstraction implements Term{
 	
 	@Override
 	public String tostring() {
-		return "(/" + this.name + "."+ toTerm.tostring()+")";
+		return "\\" + this.name + "."+ toTerm.tostring();
 	}
 
 	@Override
@@ -57,8 +57,21 @@ public class Abstraction implements Term{
 		
 	}
 
+	
 	@Override
 	public Term evaluateCbn() {
 		return this;
+	}
+
+	
+	@Override
+	public Term evaluateCbv() {
+		return this;
+	}
+	
+
+	@Override
+	public Term headReduction() {
+		return new Abstraction(this.name, toTerm.headReduction());
 	}
 }

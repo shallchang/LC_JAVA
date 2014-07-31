@@ -7,7 +7,7 @@
 
 import java.util.ArrayList;
 
-
+//(\abc.ac(bc))(\xy.x)
 public class Application implements Term {
 	
 	private Term operator;
@@ -29,7 +29,41 @@ public class Application implements Term {
 	
 	@Override
 	public String tostring() {
-		return "("+this.operator.tostring() + this.operand.tostring()+")";
+		
+		if(this.operator instanceof Abstraction){
+			if(this.operand instanceof Variable){
+				return "("+this.operator.tostring() + ")" +  this.operand.tostring();
+			}
+			else if(this.operand instanceof Abstraction){
+				return "("+this.operator.tostring() + ")" + "(" + this.operand.tostring() + ")";
+			}
+			else{
+				return "("+this.operator.tostring() + ")" + this.operand.tostring();
+			}
+		}
+		else if(this.operator instanceof Variable){
+			if(this.operand instanceof Variable){
+				return "("+this.operator.tostring()  +  this.operand.tostring() + ")";
+			}
+			else if(this.operand instanceof Abstraction){
+				return this.operator.tostring() + "(" + this.operand.tostring() + ")";
+			}
+			else{
+				return this.operator.tostring() + this.operand.tostring();
+			}
+		}
+		else{
+			if(this.operand instanceof Variable){
+				return "("+this.operator.tostring() + ")" + this.operand.tostring();
+			}
+			else if(this.operand instanceof Abstraction){
+				return "(" +this.operator.tostring() + ")" + "(" + this.operand.tostring() + ")";
+			}
+			else{
+				return this.operator.tostring() + this.operand.tostring();
+			}	
+		}
+		
 	}
 
 	@Override
@@ -41,36 +75,22 @@ public class Application implements Term {
 
 	@Override
 	public Term evaluateNormal() {
-		if(this.operator instanceof Abstraction){
-			Term newterm = substitution(((Abstraction)this.operator).getTerm(), new Variable(((Abstraction)this.operator).getName()), this.operand);
-			return newterm;
-		}
-		else{
-			if(this.operator.equals(this.operator.evaluateCbn())){
-				return new Application(this.operator, this.operand.evaluateNormal());
+		Term cbn = this.operator.evaluateCbn();
+		
+		
+		if(this.operator.equals(cbn)){
+			if(cbn instanceof Abstraction){
+				Term newterm = substitution(((Abstraction)cbn).getTerm(), new Variable(((Abstraction)cbn).getName()), this.operand);
+				return newterm;
 			}
 			else{
-				return new Application(this.operator.evaluateCbn(), this.operand);
+				return new Application(this.operator, this.operand.evaluateNormal());
 			}
-			
-		}
-		
-		
-		
-		/*
-		if(this.operator instanceof Application){
-			return new Application(this.operator.evaluateNormal(), this.operand.evaluateNormal());
-		}
-		else if(this.operator instanceof Abstraction){
-			return substitution(((Abstraction)this.operator).getTerm(), new Variable(((Abstraction)this.operator).getName()), this.operand.evaluateNormal());
-		}
-		else if(this.operator instanceof Variable){
-			return new Application(this.operator, this.operand.evaluateNormal());
 		}
 		else{
-			throw new IllegalArgumentException("Null data type");
+			return new Application(cbn, this.operand);
 		}
-		*/
+		
 	}
 	
 	
@@ -132,12 +152,43 @@ public class Application implements Term {
 
 	@Override
 	public Term evaluateCbn() {
-		if(this.operator instanceof Abstraction){
-			Term newterm = substitution(((Abstraction)this.operator).getTerm(), new Variable(((Abstraction)this.operator).getName()), this.operand);
-			return newterm;
+		Term cbn = this.operator.evaluateCbn();
+		
+		if(this.operator.equals(cbn)){
+			if(cbn instanceof Abstraction){
+				Term newterm = substitution(((Abstraction)cbn).getTerm(), new Variable(((Abstraction)cbn).getName()), this.operand);
+				return newterm;
+			}
+			else{
+				return new Application(cbn, operand);
+			}
 		}
 		else{
-			return this;
+			return new Application(cbn, this.operand);
 		}
+	}
+
+	@Override
+	public Term evaluateCbv() {
+		Term cbv = this.operator.evaluateCbv();
+		
+		if(this.operator.equals(cbv)){
+			if(cbv instanceof Abstraction){
+				Term newterm = substitution(((Abstraction)cbv).getTerm(), new Variable(((Abstraction)cbv).getName()), this.operand.evaluateCbv());
+				return newterm;
+			}
+			else{
+				return new Application(cbv, this.operand.evaluateCbv());
+			}
+			
+		}
+		else{
+			return new Application(cbv, this.operand);
+		}			
+	}
+
+	@Override
+	public Term headReduction() {
+		return new Application(this.operator.headReduction(), this.operand);
 	}
 }

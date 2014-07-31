@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Scanner;
 
 
@@ -17,23 +16,19 @@ public class LC {
         Term newTerm = lc.toTerm(input);
         
         System.out.println(newTerm.tostring());
-        /*
-        int n = 50;
-        while(n-- > 0){
+       
+        
+        
+        while(true){
+        	Term tmp = newTerm;
         	newTerm = newTerm.evaluateNormal();
+        	
+        	if(tmp.equals(newTerm)){
+        		break;
+        	}
+        	
+        	System.out.println(newTerm.tostring());
         }
-        */
-        PPC ppc = lc.ppc(newTerm, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-        
-        
-        newTerm = newTerm.evaluateNormal();
-        
-        
-        
-        System.out.println("Reducted to:" + newTerm.tostring());
-        System.out.println("Context created: " + ppc.getSubject().tostring());
-        System.out.println("Type assigned:" + ppc.getPredicate().tostring());
-        
 	}
 	
 	
@@ -41,7 +36,7 @@ public class LC {
 	
 	
 	public Term toTerm(String input){
-		if(input.startsWith("/")){
+		if(input.startsWith("\\")){
 			return toAbs(tail(input));
 		}
 		else if(input.length() == 1){
@@ -89,14 +84,14 @@ public class LC {
 			//System.out.println("Div 3");
 			String[] tmp = split(init(exp), "", 1);
 			
-			if(last(tmp[0]).equals(")") && head(tail(exp)).equals("/")){			
+			if(last(tmp[0]).equals(")") && head(tail(exp)).equals("\\")){			
 				return new String[]{toExp(tmp[0]), tmp[1]};
 			}
 			else{
 				return new String[]{tmp[0], tmp[1]};
 			}
 		}
-		else if(head(tail(exp)).equals("/") && last(init(exp)).equals(")")){
+		else if(head(tail(exp)).equals("\\") && last(init(exp)).equals(")")){
 			//System.out.println("Div 1");
 				
 			return new String[]{toExp(init(exp)), last(exp)};

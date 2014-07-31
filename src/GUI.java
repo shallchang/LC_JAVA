@@ -2,7 +2,7 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
-///f.(/x.f(xx))(/x.f(xx))
+//\f.(\x.f(xx))(\x.f(xx))
 public class GUI extends JFrame implements ActionListener {
 	private JButton resetButton;
 	private JComboBox<String> strategyList;
@@ -19,6 +19,7 @@ public class GUI extends JFrame implements ActionListener {
 	private Term intermediateTerm;
 	private String output = "";
 	private boolean abort = false;
+	private String type = "";
 	
 	public static void main(String [] args){
 		new GUI();
@@ -44,7 +45,7 @@ public class GUI extends JFrame implements ActionListener {
         //the combo boxes
 		
 		//the reduction strategy combo box
-		String[] reductionStrategies = { "normal order", "call-by-name"};
+		String[] reductionStrategies = { "normal order", "call-by-name", "call-by-value", "head reduction"};
 
 		//Create the combo box, select the item at index 0.
 		//Indices start at 0.
@@ -90,24 +91,23 @@ public class GUI extends JFrame implements ActionListener {
         
         
         
+        outputArea = new JTextArea(20,40);
+        outputArea.setBackground(new Color(248, 213, 131));
+        outputArea.setLineWrap(true);
+        outputArea.setBorder(BorderFactory.createEmptyBorder(10,20,10,10));
+        
+        
         //output scroll pane
-        //JScrollPane outputScroll = new JScrollPane();
+        JScrollPane outputScroll = new JScrollPane(outputArea);
         
-        
-        
+       
         //output text area
         JPanel outputPanel = new JPanel(new BorderLayout());
         outputPanel.setPreferredSize(new Dimension(1100, 500));
         outputPanel.setBackground(new Color(248, 213, 131));
-        outputArea = new JTextArea(20,40);
-        outputArea.setBackground(new Color(248, 213, 131));
-        outputArea.setLineWrap(true);
-        
-        outputArea.setBorder(BorderFactory.createEmptyBorder(10,20,10,10));
         
         
-        
-        outputPanel.add(BorderLayout.LINE_START, outputArea);
+        outputPanel.add(BorderLayout.LINE_START, outputScroll);
         
         
         
@@ -139,8 +139,12 @@ public class GUI extends JFrame implements ActionListener {
         
         typeArea.setBorder(BorderFactory.createEmptyBorder(10,20,10,10));
         
-        //outputPanel.add(typeArea);
-        outputPanel.add(BorderLayout.LINE_END, typeArea);
+        
+        //type assignment output scroll pane
+        JScrollPane typeoutScroll = new JScrollPane(typeArea);
+        
+        
+        outputPanel.add(BorderLayout.LINE_END, typeoutScroll);
         
         
         
@@ -155,6 +159,8 @@ public class GUI extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent e){
 		if(e.getSource() == resetButton){
 			inputField.setText("");
+			outputArea.setText("");
+			typeArea.setText("");
 		}
 		if(e.getSource() == strategyList)
 		{
@@ -167,11 +173,15 @@ public class GUI extends JFrame implements ActionListener {
 		if(e.getSource() == abortButton)
 		{
 			abort = true;
+			nextButton.setEnabled(false);
+			abortButton.setEnabled(false);
 		}
 		if(e.getSource() == doButton){
 			output = "";
+			type = "";
 			abort = false;
 			outputArea.setText(output);
+			typeArea.setText(type);
 			
 			
 			nextButton.setEnabled(true);
@@ -190,6 +200,17 @@ public class GUI extends JFrame implements ActionListener {
 				case "normalize":
 					output += newTerm.tostring()+"\n";
 					
+					//type assignment
+					PPC ppc = lc.ppc(newTerm, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+					
+					type += "Lambda term: " + newTerm.tostring()+ "\n";
+					type += "Context created: " + ppc.getSubject().tostring() + "\n";
+			        type += "Type assigned:" + ppc.getPredicate().tostring() + "\n";
+					
+			        typeArea.setText(type);
+			        
+			        
+			        //reduction
 					intermediateTerm = newTerm;
 					
 					while(true){
@@ -216,9 +237,20 @@ public class GUI extends JFrame implements ActionListener {
 					if(!abort){
 						output += newTerm.tostring()+"\n";
 						
+						PPC pc = lc.ppc(newTerm, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+						
+						type += "Lambda term: " + newTerm.tostring()+ "\n";
+						type += "Context created: " + pc.getSubject().tostring() + "\n";
+				        type += "Type assigned:" + pc.getPredicate().tostring() + "\n";
+				        type += "------------------------------------------------------\n";
+				        
+				        typeArea.setText(type);
+						
+				        
 						intermediateTerm = newTerm.evaluateNormal();
 						output += "==> " + intermediateTerm.tostring()+"\n";
 			        	outputArea.setText(output);
+			        	
 					}
 					break;
 
@@ -227,28 +259,238 @@ public class GUI extends JFrame implements ActionListener {
 				}
 	        }
 	        else if(strategy.equals("call-by-name")){
-	        	
-	        	
-	        	
+	        	switch (step) {
+				case "normalize":
+					System.out.println("cbn");
+					
+					output += newTerm.tostring()+"\n";
+					
+					//type assignment
+					PPC ppc = lc.ppc(newTerm, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+					
+					type += "Lambda term: " + newTerm.tostring()+ "\n";
+					type += "Context created: " + ppc.getSubject().tostring() + "\n";
+			        type += "Type assigned:" + ppc.getPredicate().tostring() + "\n";
+					
+			        typeArea.setText(type);
+			        
+			        
+			        //reduction
+					intermediateTerm = newTerm;
+					
+					while(true){
+						if(abort){
+							break;
+						}
+						Term tmp = intermediateTerm; 
+				        intermediateTerm = intermediateTerm.evaluateCbn();
+				        if(tmp.equals(intermediateTerm)){
+				        	output += "Reduced to:" + intermediateTerm.tostring();
+					        outputArea.setText(output);
+					        nextButton.setEnabled(false);
+					        abortButton.setEnabled(false);
+				        	
+				        	break;
+				        }
+				        else{
+				        	output += "==> " + intermediateTerm.tostring()+"\n";
+				        	outputArea.setText(output);
+				        }	
+					}
+					break;
+				case "single step":
+					if(!abort){
+						output += newTerm.tostring()+"\n";
+						
+						PPC pc = lc.ppc(newTerm, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+						
+						type += "Lambda term: " + newTerm.tostring()+ "\n";
+						type += "Context created: " + pc.getSubject().tostring() + "\n";
+				        type += "Type assigned:" + pc.getPredicate().tostring() + "\n";
+				        type += "------------------------------------------------------\n";
+				        
+				        typeArea.setText(type);
+						
+				        
+						intermediateTerm = newTerm.evaluateCbn();
+						output += "==> " + intermediateTerm.tostring()+"\n";
+			        	outputArea.setText(output);
+			        	
+					}
+					break;
+
+				default:
+					break;
+				}
 	        }
-	        else{
-	        	
-	        	
+	        else if(strategy.equals("call-by-value")){
+	        	switch (step) {
+				case "normalize":
+					output += newTerm.tostring()+"\n";
+					
+					//type assignment
+					PPC ppc = lc.ppc(newTerm, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+					
+					type += "Lambda term: " + newTerm.tostring()+ "\n";
+					type += "Context created: " + ppc.getSubject().tostring() + "\n";
+			        type += "Type assigned:" + ppc.getPredicate().tostring() + "\n";
+					
+			        typeArea.setText(type);
+			        
+			        
+			        //reduction
+					intermediateTerm = newTerm;
+					
+					while(true){
+						if(abort){
+							break;
+						}
+						Term tmp = intermediateTerm; 
+				        intermediateTerm = intermediateTerm.evaluateCbv();
+				        if(tmp.equals(intermediateTerm)){
+				        	output += "Reduced to:" + intermediateTerm.tostring();
+					        outputArea.setText(output);
+					        nextButton.setEnabled(false);
+					        abortButton.setEnabled(false);
+				        	
+				        	break;
+				        }
+				        else{
+				        	output += "==> " + intermediateTerm.tostring()+"\n";
+				        	outputArea.setText(output);
+				        }	
+					}
+					break;
+				case "single step":
+					if(!abort){
+						output += newTerm.tostring()+"\n";
+						
+						PPC pc = lc.ppc(newTerm, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+						
+						type += "Lambda term: " + newTerm.tostring()+ "\n";
+						type += "Context created: " + pc.getSubject().tostring() + "\n";
+				        type += "Type assigned:" + pc.getPredicate().tostring() + "\n";
+				        type += "------------------------------------------------------\n";
+				        
+				        typeArea.setText(type);
+						
+				        
+						intermediateTerm = newTerm.evaluateCbv();
+						output += "==> " + intermediateTerm.tostring()+"\n";
+			        	outputArea.setText(output);
+			        	
+					}
+					break;
+
+				default:
+					break;
+				}
+	        }
+	        else if(strategy.equals("head reduction")){
+	        	switch (step) {
+				case "normalize":
+					System.out.println("head");
+					
+					output += newTerm.tostring()+"\n";
+					
+					//type assignment
+					PPC ppc = lc.ppc(newTerm, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+					
+					type += "Lambda term: " + newTerm.tostring()+ "\n";
+					type += "Context created: " + ppc.getSubject().tostring() + "\n";
+			        type += "Type assigned:" + ppc.getPredicate().tostring() + "\n";
+					
+			        typeArea.setText(type);
+			        
+			        
+			        //reduction
+					intermediateTerm = newTerm;
+					
+					while(true){
+						if(abort){
+							break;
+						}
+						Term tmp = intermediateTerm; 
+				        intermediateTerm = intermediateTerm.headReduction();
+				        if(tmp.equals(intermediateTerm)){
+				        	output += "Reduced to:" + intermediateTerm.tostring();
+					        outputArea.setText(output);
+					        nextButton.setEnabled(false);
+					        abortButton.setEnabled(false);
+				        	
+				        	break;
+				        }
+				        else{
+				        	output += "==> " + intermediateTerm.tostring()+"\n";
+				        	outputArea.setText(output);
+				        }	
+					}
+					break;
+				case "single step":
+					if(!abort){
+						output += newTerm.tostring()+"\n";
+						
+						PPC pc = lc.ppc(newTerm, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+						
+						type += "Lambda term: " + newTerm.tostring()+ "\n";
+						type += "Context created: " + pc.getSubject().tostring() + "\n";
+				        type += "Type assigned:" + pc.getPredicate().tostring() + "\n";
+				        type += "------------------------------------------------------\n";
+				        
+				        typeArea.setText(type);
+						
+				        
+						intermediateTerm = newTerm.headReduction();
+						output += "==> " + intermediateTerm.tostring()+"\n";
+			        	outputArea.setText(output);
+			        	
+					}
+					break;
+
+				default:
+					break;
+				}
 	        }
 		}
 		if(e.getSource() == nextButton){
+			LC lc = new LC();
+			
 			Term tmp = intermediateTerm;
-			intermediateTerm = intermediateTerm.evaluateNormal();
 			
 			
+			PPC pc = lc.ppc(tmp, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
 			
-			if(tmp.equals(intermediateTerm)){
-				output += "Reduced to:" + intermediateTerm.tostring();
-		        outputArea.setText(output);
-		        nextButton.setEnabled(false);
-		        abortButton.setEnabled(false);
-			}
-			else{
+			type += "Lambda term: " + tmp.tostring()+ "\n";
+			type += "Context created: " + pc.getSubject().tostring() + "\n";
+	        type += "Type assigned:" + pc.getPredicate().tostring() + "\n";
+			type += "------------------------------------------------------\n";
+	        
+	        typeArea.setText(type);
+	        
+
+	        switch (strategy) {
+	        case "normal order":
+	        	intermediateTerm = intermediateTerm.evaluateNormal();
+	        	break;
+	        case "call-by-name":
+	        	intermediateTerm = intermediateTerm.evaluateCbn();
+	        	break;
+	        case "call-by-value":
+	        	intermediateTerm = intermediateTerm.evaluateCbv();
+	        	break;
+	        case "head reduction":
+	        	intermediateTerm = intermediateTerm.headReduction();
+	        	break;
+	        }
+
+
+	        if(tmp.equals(intermediateTerm)){
+	        	output += "Reduced to:" + intermediateTerm.tostring();
+	        	outputArea.setText(output);
+	        	nextButton.setEnabled(false);
+	        	abortButton.setEnabled(false);
+	        }
+	        else{
 				output += "==> " + intermediateTerm.tostring()+"\n";
 	        	outputArea.setText(output);
 	        	

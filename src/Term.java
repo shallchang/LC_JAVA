@@ -23,6 +23,10 @@ public interface Term {
 	
 	public Term evaluateCbn();
 	
+	public Term evaluateCbv();
+	
+	public Term headReduction();
+	
 	public boolean equals(Term t);
 
 }
