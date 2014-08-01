@@ -57,4 +57,10 @@ public class Variable implements Term{
 	public Term headReduction() {
 		return this;
 	}
+
+	
+	@Override
+	public Term applicativeOrder() {
+		return this;
+	}
 }

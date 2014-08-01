@@ -74,4 +74,9 @@ public class Abstraction implements Term{
 	public Term headReduction() {
 		return new Abstraction(this.name, toTerm.headReduction());
 	}
+
+	@Override
+	public Term applicativeOrder() {
+		return new Abstraction(this.name, toTerm.applicativeOrder());
+	}
 }

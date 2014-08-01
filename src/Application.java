@@ -189,6 +189,39 @@ public class Application implements Term {
 
 	@Override
 	public Term headReduction() {
-		return new Application(this.operator.headReduction(), this.operand);
+		Term hr = this.operator.headReduction();
+
+
+		if(this.operator.equals(hr)){
+			if(hr instanceof Abstraction){
+				Term newterm = substitution(((Abstraction)hr).getTerm(), new Variable(((Abstraction)hr).getName()), this.operand);
+				return newterm;
+			}
+			else{
+				return new Application(this.operator, this.operand);
+			}
+		}
+		else{
+			return new Application(hr, this.operand);
+		}
+	}
+
+	@Override
+	public Term applicativeOrder() {
+		Term app = this.operator.applicativeOrder();
+
+
+		if(this.operator.equals(app)){
+			if(app instanceof Abstraction){
+				Term newterm = substitution(((Abstraction)app).getTerm(), new Variable(((Abstraction)app).getName()), this.operand.applicativeOrder());
+				return newterm;
+			}
+			else{
+				return new Application(this.operator, this.operand.applicativeOrder());
+			}
+		}
+		else{
+			return new Application(app, this.operand);
+		}
 	}
 }

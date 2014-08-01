@@ -27,6 +27,8 @@ public interface Term {
 	
 	public Term headReduction();
 	
+	public Term applicativeOrder();
+	
 	public boolean equals(Term t);
 
 }

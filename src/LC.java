@@ -17,22 +17,17 @@ public class LC {
         
         System.out.println(newTerm.tostring());
        
+        PPC ppc = lc.ppc(newTerm, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+		
+		if(ppc == null){
+			System.out.println("untypable");
+		}
+		else{
+			System.out.println(ppc.getSubject().tostring() + " |- " + ppc.getPredicate().tostring() + "\n");
+		}
         
         
-        while(true){
-        	Term tmp = newTerm;
-        	newTerm = newTerm.evaluateNormal();
-        	
-        	if(tmp.equals(newTerm)){
-        		break;
-        	}
-        	
-        	System.out.println(newTerm.tostring());
-        }
 	}
-	
-	
-	
 	
 	
 	public Term toTerm(String input){
@@ -214,16 +209,19 @@ public class LC {
 	
 	
 	public TSub unify(Type first, Type second){
+		System.out.println(first.tostring() + second.tostring());
+		
 		if(first instanceof TVar){
 			if(second instanceof TVar){
 				return new Sub((TVar)first, second);
 			}
 			else{
 				if(!occur(first, ((TP) second).getHead()) && !occur(first, ((TP)second).getTail())){
+					System.out.println("fk");
 					return new Sub((TVar)first, second);
 				}
 				else{
-					return new Sub(new TVar("A"), new TVar("A"));
+					return null;
 				}
 			}
 		}
@@ -260,6 +258,9 @@ public class LC {
 		Statement target = search(hd.getSubject(), second);
 		if(!target.getPredicate().equals(new TVar(""))){
 			TSub s1 = unify(hd.getPredicate(), target.getPredicate());
+			
+			if(s1 == null) return null;
+			
 			TSub s2 = unifyContext(contextSubs(s1, new Context(tl)), contextSubs(s1, second));
           
 			return new So(s2, s1);
@@ -293,10 +294,6 @@ public class LC {
 	
 	
 	
-	
-	
-	
-	
 	public PPC ppc(Term term, String counter){
 		if(term instanceof Variable){
 			ArrayList<Statement> sts = new ArrayList<>();
@@ -311,47 +308,65 @@ public class LC {
 			
 			PPC receiver = ppc(((Abstraction) term).getTerm(), counter);
 			
-			if(contains(xv, receiver.getSubject())){
-				Type searchType = search(xv, receiver.getSubject()).getPredicate();
-				ArrayList<Statement> original = receiver.getSubject().getContext();
-				
-				int i = 0;
-				for(Statement s: original){
-					if(s.getSubject().equals(xv)) break;
-					i++;
+			if(receiver != null){
+				if(contains(xv, receiver.getSubject())){
+					Type searchType = search(xv, receiver.getSubject()).getPredicate();
+					ArrayList<Statement> original = receiver.getSubject().getContext();
+					
+					int i = 0;
+					for(Statement s: original){
+						if(s.getSubject().equals(xv)) break;
+						i++;
+					}
+					
+					original.remove(i);
+					
+					
+					TP tp = new TP(searchType, receiver.getPredicate());
+					
+					return new PPC(new Context(original), tp, receiver.getCounter());
+					
 				}
-				
-				original.remove(i);
-				
-				
-				TP tp = new TP(searchType, receiver.getPredicate());
-				
-				return new PPC(new Context(original), tp, receiver.getCounter());
-				
+				else{
+					System.out.println("HERE");
+					TVar f = new TVar(receiver.getCounter().substring(0, 1));
+					
+					
+					return new PPC(receiver.getSubject(), new TP(f, receiver.getPredicate()) , receiver.getCounter().substring(1));
+					
+				}
 			}
-			else{
-				System.out.println("HERE");
-				TVar f = new TVar(receiver.getCounter().substring(0, 1));
-				
-				
-				return new PPC(receiver.getSubject(), new TP(f, receiver.getPredicate()) , receiver.getCounter().substring(1));
-				
+			
+			else {
+				return null;
 			}
+			
 			
 			
 		}
 		else{
 			TVar f = new TVar(counter.substring(0,1));
+			
 			PPC receiver1 = ppc(((Application)term).getOperator(), counter.substring(1));
+			
+			if(receiver1 == null) return null;
+			
 			PPC receiver2 = ppc(((Application)term).getOperand(), receiver1.getCounter());
 			
-			System.out.println("r1: " + receiver1.getPredicate().tostring());
-			System.out.println("r2: " + receiver2.getPredicate().tostring());
+			if(receiver2 == null) return null;
+			
+			
+			System.out.println(receiver1.getSubject().tostring());
+			System.out.println(receiver2.getSubject().tostring());
 			
 			
 			TSub s1 = unify(receiver1.getPredicate(), new TP(receiver2.getPredicate(), f));
 			
+			if(s1 == null) return null;
+			
 			TSub s2 = unifyContext(contextSubs(s1, receiver1.getSubject()), contextSubs(s1, receiver2.getSubject()));
+			
+			if(s2 == null) return null;
 			
 			
 			ArrayList<Statement> tmp = receiver1.getSubject().getContext();

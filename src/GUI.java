@@ -27,7 +27,7 @@ public class GUI extends JFrame implements ActionListener {
 	
 	public GUI(){
 		//set the JFrame
-		setTitle("Lambda term reducer");
+		setTitle("Lambda Term Reducer");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         
 		
@@ -45,7 +45,7 @@ public class GUI extends JFrame implements ActionListener {
         //the combo boxes
 		
 		//the reduction strategy combo box
-		String[] reductionStrategies = { "normal order", "call-by-name", "call-by-value", "head reduction"};
+		String[] reductionStrategies = { "normal order", "call-by-name", "call-by-value", "head reduction", "applicative order"};
 
 		//Create the combo box, select the item at index 0.
 		//Indices start at 0.
@@ -147,7 +147,6 @@ public class GUI extends JFrame implements ActionListener {
         outputPanel.add(BorderLayout.LINE_END, typeoutScroll);
         
         
-        
         getContentPane().add("South", outputPanel);
         
         
@@ -203,12 +202,16 @@ public class GUI extends JFrame implements ActionListener {
 					//type assignment
 					PPC ppc = lc.ppc(newTerm, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
 					
-					type += "Lambda term: " + newTerm.tostring()+ "\n";
-					type += "Context created: " + ppc.getSubject().tostring() + "\n";
-			        type += "Type assigned:" + ppc.getPredicate().tostring() + "\n";
+					System.out.println("ppc");
+					
+					if(ppc == null){
+						type += "untypable\n";
+					}
+					else{
+						type += ppc.getSubject().tostring() + " |- " + ppc.getPredicate().tostring() + "\n";
+					}
 					
 			        typeArea.setText(type);
-			        
 			        
 			        //reduction
 					intermediateTerm = newTerm;
@@ -239,10 +242,12 @@ public class GUI extends JFrame implements ActionListener {
 						
 						PPC pc = lc.ppc(newTerm, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
 						
-						type += "Lambda term: " + newTerm.tostring()+ "\n";
-						type += "Context created: " + pc.getSubject().tostring() + "\n";
-				        type += "Type assigned:" + pc.getPredicate().tostring() + "\n";
-				        type += "------------------------------------------------------\n";
+						if(pc == null){
+							type += "untypable\n";
+						}
+						else{
+							type += pc.getSubject().tostring() + " |- " + pc.getPredicate().tostring() + "\n";
+						}
 				        
 				        typeArea.setText(type);
 						
@@ -268,9 +273,12 @@ public class GUI extends JFrame implements ActionListener {
 					//type assignment
 					PPC ppc = lc.ppc(newTerm, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
 					
-					type += "Lambda term: " + newTerm.tostring()+ "\n";
-					type += "Context created: " + ppc.getSubject().tostring() + "\n";
-			        type += "Type assigned:" + ppc.getPredicate().tostring() + "\n";
+					if(ppc == null){
+						type += "untypable\n";
+					}
+					else{
+						type += ppc.getSubject().tostring() + " |- " + ppc.getPredicate().tostring() + "\n";
+					}
 					
 			        typeArea.setText(type);
 			        
@@ -304,10 +312,12 @@ public class GUI extends JFrame implements ActionListener {
 						
 						PPC pc = lc.ppc(newTerm, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
 						
-						type += "Lambda term: " + newTerm.tostring()+ "\n";
-						type += "Context created: " + pc.getSubject().tostring() + "\n";
-				        type += "Type assigned:" + pc.getPredicate().tostring() + "\n";
-				        type += "------------------------------------------------------\n";
+						if(pc == null){
+							type += "untypable\n";
+						}
+						else{
+							type += pc.getSubject().tostring() + " |- " + pc.getPredicate().tostring() + "\n";
+						}
 				        
 				        typeArea.setText(type);
 						
@@ -331,9 +341,12 @@ public class GUI extends JFrame implements ActionListener {
 					//type assignment
 					PPC ppc = lc.ppc(newTerm, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
 					
-					type += "Lambda term: " + newTerm.tostring()+ "\n";
-					type += "Context created: " + ppc.getSubject().tostring() + "\n";
-			        type += "Type assigned:" + ppc.getPredicate().tostring() + "\n";
+					if(ppc == null){
+						type += "untypable\n";
+					}
+					else{
+						type += ppc.getSubject().tostring() + " |- " + ppc.getPredicate().tostring() + "\n";
+					}
 					
 			        typeArea.setText(type);
 			        
@@ -367,10 +380,12 @@ public class GUI extends JFrame implements ActionListener {
 						
 						PPC pc = lc.ppc(newTerm, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
 						
-						type += "Lambda term: " + newTerm.tostring()+ "\n";
-						type += "Context created: " + pc.getSubject().tostring() + "\n";
-				        type += "Type assigned:" + pc.getPredicate().tostring() + "\n";
-				        type += "------------------------------------------------------\n";
+						if(pc == null){
+							type += "untypable\n";
+						}
+						else{
+							type += pc.getSubject().tostring() + " |- " + pc.getPredicate().tostring() + "\n";
+						}
 				        
 				        typeArea.setText(type);
 						
@@ -396,9 +411,12 @@ public class GUI extends JFrame implements ActionListener {
 					//type assignment
 					PPC ppc = lc.ppc(newTerm, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
 					
-					type += "Lambda term: " + newTerm.tostring()+ "\n";
-					type += "Context created: " + ppc.getSubject().tostring() + "\n";
-			        type += "Type assigned:" + ppc.getPredicate().tostring() + "\n";
+					if(ppc == null){
+						type += "untypable\n";
+					}
+					else{
+						type += ppc.getSubject().tostring() + " |- " + ppc.getPredicate().tostring() + "\n";
+					}
 					
 			        typeArea.setText(type);
 			        
@@ -432,15 +450,86 @@ public class GUI extends JFrame implements ActionListener {
 						
 						PPC pc = lc.ppc(newTerm, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
 						
-						type += "Lambda term: " + newTerm.tostring()+ "\n";
-						type += "Context created: " + pc.getSubject().tostring() + "\n";
-				        type += "Type assigned:" + pc.getPredicate().tostring() + "\n";
-				        type += "------------------------------------------------------\n";
+						if(pc == null){
+							type += "untypable\n";
+						}
+						else{
+							type += pc.getSubject().tostring() + " |- " + pc.getPredicate().tostring() + "\n";
+						}
 				        
 				        typeArea.setText(type);
 						
 				        
 						intermediateTerm = newTerm.headReduction();
+						output += "==> " + intermediateTerm.tostring()+"\n";
+			        	outputArea.setText(output);
+			        	
+					}
+					break;
+
+				default:
+					break;
+				}
+	        }
+	        else if(strategy.equals("applicative order")){
+	        	switch (step) {
+				case "normalize":
+					
+					output += newTerm.tostring()+"\n";
+					
+					//type assignment
+					PPC ppc = lc.ppc(newTerm, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+					
+					if(ppc == null){
+						type += "untypable\n";
+					}
+					else{
+						type += ppc.getSubject().tostring() + " |- " + ppc.getPredicate().tostring() + "\n";
+					}
+					
+			        typeArea.setText(type);
+			        
+			        
+			        //reduction
+					intermediateTerm = newTerm;
+					
+					while(true){
+						if(abort){
+							break;
+						}
+						Term tmp = intermediateTerm; 
+				        intermediateTerm = intermediateTerm.applicativeOrder();
+				        if(tmp.equals(intermediateTerm)){
+				        	output += "Reduced to:" + intermediateTerm.tostring();
+					        outputArea.setText(output);
+					        nextButton.setEnabled(false);
+					        abortButton.setEnabled(false);
+				        	
+				        	break;
+				        }
+				        else{
+				        	output += "==> " + intermediateTerm.tostring()+"\n";
+				        	outputArea.setText(output);
+				        }	
+					}
+					break;
+				case "single step":
+					if(!abort){
+						output += newTerm.tostring()+"\n";
+						
+						PPC pc = lc.ppc(newTerm, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+						
+						if(pc == null){
+							type += "untypable\n";
+						}
+						else{
+							type += pc.getSubject().tostring() + " |- " + pc.getPredicate().tostring() + "\n";
+						}
+				        
+				        typeArea.setText(type);
+						
+				        
+						intermediateTerm = newTerm.applicativeOrder();
 						output += "==> " + intermediateTerm.tostring()+"\n";
 			        	outputArea.setText(output);
 			        	
@@ -460,10 +549,13 @@ public class GUI extends JFrame implements ActionListener {
 			
 			PPC pc = lc.ppc(tmp, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
 			
-			type += "Lambda term: " + tmp.tostring()+ "\n";
-			type += "Context created: " + pc.getSubject().tostring() + "\n";
-	        type += "Type assigned:" + pc.getPredicate().tostring() + "\n";
-			type += "------------------------------------------------------\n";
+			if(pc == null){
+				type += "untypable\n";
+			}
+			else{
+				type += pc.getSubject().tostring() + " |- " + pc.getPredicate().tostring() + "\n";
+			}
+			
 	        
 	        typeArea.setText(type);
 	        
@@ -480,6 +572,9 @@ public class GUI extends JFrame implements ActionListener {
 	        	break;
 	        case "head reduction":
 	        	intermediateTerm = intermediateTerm.headReduction();
+	        	break;
+	        case "applicative order":
+	        	intermediateTerm = intermediateTerm.applicativeOrder();
 	        	break;
 	        }
 

@@ -17,8 +17,10 @@ public class Context {
 	public String tostring(){
 		String tmp = "";
 		for(Statement states : this.sts){
-			tmp += states.tostring() + " ";
+			tmp += states.tostring() + ", ";
 		}
+		
+		if(tmp.length() > 3) tmp = tmp.substring(0, tmp.length()-2);
 		
 		return tmp;
 	}
