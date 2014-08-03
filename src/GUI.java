@@ -13,13 +13,17 @@ public class GUI extends JFrame implements ActionListener {
 	private JTextField inputField;
 	private JTextArea outputArea;
 	private JTextArea typeArea;
+	private JCheckBox exsubBox;
 	private String strategy = "normal order";
 	private String step = "normalize";
 	
 	private Term intermediateTerm;
 	private String output = "";
 	private boolean abort = false;
+	private boolean exsub = false;
 	private String type = "";
+	private Term threadTerm;
+	
 	
 	public static void main(String [] args){
 		new GUI();
@@ -63,7 +67,10 @@ public class GUI extends JFrame implements ActionListener {
 		steplists = new JComboBox<>(steps);
 		steplists.setSelectedIndex(0);
 		steplists.addActionListener(this);
-		//strategyList.setBounds(20, 35, 260, 20);
+		
+		exsubBox = new JCheckBox("explicit substitution");
+		exsubBox.addActionListener(this);
+		
 
 		
 		//start button
@@ -75,6 +82,7 @@ public class GUI extends JFrame implements ActionListener {
 		topPanel.add(resetButton);
         topPanel.add(strategyList);
         topPanel.add(steplists);
+        topPanel.add(exsubBox);
         
         
         //input text field
@@ -83,7 +91,7 @@ public class GUI extends JFrame implements ActionListener {
         
         //inputPanel.setPreferredSize(new Dimension(600, 900));
         
-        inputField = new JTextField(30);
+        inputField = new JTextField(37);
         inputPanel.add(inputField);
         inputPanel.add(doButton);
         
@@ -154,6 +162,63 @@ public class GUI extends JFrame implements ActionListener {
 		setVisible(true);
 	}
 	
+	private class RunnableThread extends Thread {
+		
+		public RunnableThread() {
+			
+		}
+		
+		
+		public void run() {
+			
+			LC lc = new LC();
+			
+			output += threadTerm.tostring()+"\n";
+			
+			//type assignment
+			PPC ppc = lc.ppc(threadTerm, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+			
+			if(ppc == null){
+				type += "untypable\n";
+			}
+			else{
+				type += ppc.getSubject().tostring() + " |- " + ppc.getPredicate().tostring() + "\n";
+			}
+			
+			
+	        typeArea.setText(type);
+	        
+	        //reduction
+			intermediateTerm = threadTerm;
+			
+			while(true){
+				if(abort){
+					break;
+				}
+				
+				try{
+	    			Thread.sleep((long)(Math.random()*100));
+	    		}catch(InterruptedException e){
+	    		}
+				
+				Term tmp = intermediateTerm; 
+		        intermediateTerm = intermediateTerm.evaluateNormal(exsub);
+		        if(tmp.equals(intermediateTerm)){
+		        	output += "Reduced to:" + intermediateTerm.tostring();
+			        outputArea.setText(output);
+			        nextButton.setEnabled(false);
+			        abortButton.setEnabled(false);
+		        	
+		        	break;
+		        }
+		        else{
+		        	output += "==> " + intermediateTerm.tostring()+"\n";
+		        	outputArea.setText(output);
+		        }	
+			}
+		}
+	}
+	
 	
 	public void actionPerformed(ActionEvent e){
 		if(e.getSource() == resetButton){
@@ -197,6 +262,12 @@ public class GUI extends JFrame implements ActionListener {
 	        if(strategy.equals("normal order")){
 	        	switch (step) {
 				case "normalize":
+					this.threadTerm = newTerm;
+
+					RunnableThread thread = new RunnableThread();
+					thread.start();
+					
+					/*
 					output += newTerm.tostring()+"\n";
 					
 					//type assignment
@@ -221,7 +292,7 @@ public class GUI extends JFrame implements ActionListener {
 							break;
 						}
 						Term tmp = intermediateTerm; 
-				        intermediateTerm = intermediateTerm.evaluateNormal();
+				        intermediateTerm = intermediateTerm.evaluateNormal(exsub);
 				        if(tmp.equals(intermediateTerm)){
 				        	output += "Reduced to:" + intermediateTerm.tostring();
 					        outputArea.setText(output);
@@ -235,6 +306,7 @@ public class GUI extends JFrame implements ActionListener {
 				        	outputArea.setText(output);
 				        }	
 					}
+					*/
 					break;
 				case "single step":
 					if(!abort){
@@ -252,7 +324,7 @@ public class GUI extends JFrame implements ActionListener {
 				        typeArea.setText(type);
 						
 				        
-						intermediateTerm = newTerm.evaluateNormal();
+						intermediateTerm = newTerm.evaluateNormal(exsub);
 						output += "==> " + intermediateTerm.tostring()+"\n";
 			        	outputArea.setText(output);
 			        	
@@ -291,7 +363,7 @@ public class GUI extends JFrame implements ActionListener {
 							break;
 						}
 						Term tmp = intermediateTerm; 
-				        intermediateTerm = intermediateTerm.evaluateCbn();
+				        intermediateTerm = intermediateTerm.evaluateCbn(exsub);
 				        if(tmp.equals(intermediateTerm)){
 				        	output += "Reduced to:" + intermediateTerm.tostring();
 					        outputArea.setText(output);
@@ -322,7 +394,7 @@ public class GUI extends JFrame implements ActionListener {
 				        typeArea.setText(type);
 						
 				        
-						intermediateTerm = newTerm.evaluateCbn();
+						intermediateTerm = newTerm.evaluateCbn(exsub);
 						output += "==> " + intermediateTerm.tostring()+"\n";
 			        	outputArea.setText(output);
 			        	
@@ -359,7 +431,7 @@ public class GUI extends JFrame implements ActionListener {
 							break;
 						}
 						Term tmp = intermediateTerm; 
-				        intermediateTerm = intermediateTerm.evaluateCbv();
+				        intermediateTerm = intermediateTerm.evaluateCbv(exsub);
 				        if(tmp.equals(intermediateTerm)){
 				        	output += "Reduced to:" + intermediateTerm.tostring();
 					        outputArea.setText(output);
@@ -390,7 +462,7 @@ public class GUI extends JFrame implements ActionListener {
 				        typeArea.setText(type);
 						
 				        
-						intermediateTerm = newTerm.evaluateCbv();
+						intermediateTerm = newTerm.evaluateCbv(exsub);
 						output += "==> " + intermediateTerm.tostring()+"\n";
 			        	outputArea.setText(output);
 			        	
@@ -429,7 +501,7 @@ public class GUI extends JFrame implements ActionListener {
 							break;
 						}
 						Term tmp = intermediateTerm; 
-				        intermediateTerm = intermediateTerm.headReduction();
+				        intermediateTerm = intermediateTerm.headReduction(exsub);
 				        if(tmp.equals(intermediateTerm)){
 				        	output += "Reduced to:" + intermediateTerm.tostring();
 					        outputArea.setText(output);
@@ -460,7 +532,7 @@ public class GUI extends JFrame implements ActionListener {
 				        typeArea.setText(type);
 						
 				        
-						intermediateTerm = newTerm.headReduction();
+						intermediateTerm = newTerm.headReduction(exsub);
 						output += "==> " + intermediateTerm.tostring()+"\n";
 			        	outputArea.setText(output);
 			        	
@@ -498,7 +570,7 @@ public class GUI extends JFrame implements ActionListener {
 							break;
 						}
 						Term tmp = intermediateTerm; 
-				        intermediateTerm = intermediateTerm.applicativeOrder();
+				        intermediateTerm = intermediateTerm.applicativeOrder(exsub);
 				        if(tmp.equals(intermediateTerm)){
 				        	output += "Reduced to:" + intermediateTerm.tostring();
 					        outputArea.setText(output);
@@ -529,7 +601,7 @@ public class GUI extends JFrame implements ActionListener {
 				        typeArea.setText(type);
 						
 				        
-						intermediateTerm = newTerm.applicativeOrder();
+						intermediateTerm = newTerm.applicativeOrder(exsub);
 						output += "==> " + intermediateTerm.tostring()+"\n";
 			        	outputArea.setText(output);
 			        	
@@ -562,22 +634,23 @@ public class GUI extends JFrame implements ActionListener {
 
 	        switch (strategy) {
 	        case "normal order":
-	        	intermediateTerm = intermediateTerm.evaluateNormal();
+	        	intermediateTerm = intermediateTerm.evaluateNormal(exsub);
 	        	break;
 	        case "call-by-name":
-	        	intermediateTerm = intermediateTerm.evaluateCbn();
+	        	intermediateTerm = intermediateTerm.evaluateCbn(exsub);
 	        	break;
 	        case "call-by-value":
-	        	intermediateTerm = intermediateTerm.evaluateCbv();
+	        	intermediateTerm = intermediateTerm.evaluateCbv(exsub);
 	        	break;
 	        case "head reduction":
-	        	intermediateTerm = intermediateTerm.headReduction();
+	        	intermediateTerm = intermediateTerm.headReduction(exsub);
 	        	break;
 	        case "applicative order":
-	        	intermediateTerm = intermediateTerm.applicativeOrder();
+	        	intermediateTerm = intermediateTerm.applicativeOrder(exsub);
 	        	break;
 	        }
 
+	        System.out.println("hi");
 
 	        if(tmp.equals(intermediateTerm)){
 	        	output += "Reduced to:" + intermediateTerm.tostring();
@@ -591,8 +664,13 @@ public class GUI extends JFrame implements ActionListener {
 	        	
 			}
 		}
-		
-		
-	}
-	
+		if(e.getSource() == exsubBox){
+			if(exsubBox.isSelected()){
+				exsub = true;
+			}
+			else{
+				exsub = false;
+			}
+		}
+	}	
 }

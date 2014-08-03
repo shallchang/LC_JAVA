@@ -5,6 +5,7 @@ public class Abstraction implements Term{
 
 	private char name;
 	private Term toTerm;
+	private IntermediateSub iSub = null;
 	
 	public Abstraction(char name, Term toTerm){
 		this.name = name;
@@ -21,7 +22,8 @@ public class Abstraction implements Term{
 	
 	@Override
 	public String tostring() {
-		return "\\" + this.name + "."+ toTerm.tostring();
+		if(this.iSub == null) return "\\" + this.name + "." + toTerm.tostring();
+		else return "\\" + this.name + "."+ toTerm.tostring() + this.iSub.tostring();
 	}
 
 	@Override
@@ -42,8 +44,13 @@ public class Abstraction implements Term{
 	}
 
 	@Override
-	public Term evaluateNormal() {
-		return new Abstraction(this.name, toTerm.evaluateNormal());
+	public Term evaluateNormal(boolean exsub) {
+		if(this.iSub != null){
+			return new Abstraction(this.name, this.toTerm.subs(iSub.getFrom(), iSub.getTo()));
+		}
+		
+		System.out.println("not sub");
+		return new Abstraction(this.name, toTerm.evaluateNormal(exsub));
 	}
 
 	@Override
@@ -59,24 +66,44 @@ public class Abstraction implements Term{
 
 	
 	@Override
-	public Term evaluateCbn() {
+	public Term evaluateCbn(boolean exsub) {
 		return this;
 	}
 
 	
 	@Override
-	public Term evaluateCbv() {
+	public Term evaluateCbv(boolean exsub) {
 		return this;
 	}
 	
 
 	@Override
-	public Term headReduction() {
-		return new Abstraction(this.name, toTerm.headReduction());
+	public Term headReduction(boolean exsub) {
+		return new Abstraction(this.name, toTerm.headReduction(exsub));
 	}
 
 	@Override
-	public Term applicativeOrder() {
-		return new Abstraction(this.name, toTerm.applicativeOrder());
+	public Term applicativeOrder(boolean exsub) {
+		return new Abstraction(this.name, toTerm.applicativeOrder(exsub));
+	}
+
+	@Override
+	public void setIntermediateSub(IntermediateSub isub) {
+		this.iSub = isub;
+	}
+
+	@Override
+	public Term subs(Variable subfrom, Term subto) {
+		return new Abstraction(this.name, this.toTerm.subs(subfrom, subto));
+	}
+
+	@Override
+	public IntermediateSub getIsub() {
+		return this.iSub;
+	}
+
+	@Override
+	public Term mirror() {
+		return new Abstraction(name, toTerm.mirror());
 	}
 }

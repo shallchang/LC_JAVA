@@ -9,25 +9,35 @@ public interface Term {
 	
 	public String tostring();
 	
+	
+	public IntermediateSub getIsub();
+	
 	/**
 	 *get all the free variables of a term 
 	 */
 	
 	public ArrayList<Variable> freeVar();
 	
+	
+	public void setIntermediateSub(IntermediateSub isub);
+	
+	public Term subs(Variable subfrom, Term subto);
+	
+	public Term mirror();
+	
 	/**
 	 *evaluate a term
 	 */
 	
-	public Term evaluateNormal();
+	public Term evaluateNormal(boolean exsub);
 	
-	public Term evaluateCbn();
+	public Term evaluateCbn(boolean exsub);
 	
-	public Term evaluateCbv();
+	public Term evaluateCbv(boolean exsub);
 	
-	public Term headReduction();
+	public Term headReduction(boolean exsub);
 	
-	public Term applicativeOrder();
+	public Term applicativeOrder(boolean exsub);
 	
 	public boolean equals(Term t);
 

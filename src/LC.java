@@ -313,14 +313,15 @@ public class LC {
 					Type searchType = search(xv, receiver.getSubject()).getPredicate();
 					ArrayList<Statement> original = receiver.getSubject().getContext();
 					
-					int i = 0;
+					ArrayList<Statement> remove = new ArrayList<>();
+	
 					for(Statement s: original){
-						if(s.getSubject().equals(xv)) break;
-						i++;
+						if(s.getSubject().equals(xv)) remove.add(s);
 					}
 					
-					original.remove(i);
-					
+					for(Statement rm: remove){
+						original.remove(rm);
+					}
 					
 					TP tp = new TP(searchType, receiver.getPredicate());
 					
@@ -335,14 +336,10 @@ public class LC {
 					return new PPC(receiver.getSubject(), new TP(f, receiver.getPredicate()) , receiver.getCounter().substring(1));
 					
 				}
-			}
-			
+			}	
 			else {
 				return null;
 			}
-			
-			
-			
 		}
 		else{
 			TVar f = new TVar(counter.substring(0,1));
@@ -380,9 +377,6 @@ public class LC {
 		
 	}
 	
-	
-	
-	
 	public boolean occur(Type first, Type second){
 		if(first instanceof TVar){
 			if(second instanceof TP){
@@ -401,8 +395,4 @@ public class LC {
 			return false;
 		}
 	}
-
-	
-	
-	
 }

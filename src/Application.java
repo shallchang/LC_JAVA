@@ -12,7 +12,7 @@ public class Application implements Term {
 	
 	private Term operator;
 	private Term operand;
-	
+	private IntermediateSub iSub = null;
 	
 	public Application(Term operator, Term operand){
 		this.operator = operator;
@@ -29,40 +29,46 @@ public class Application implements Term {
 	
 	@Override
 	public String tostring() {
+		String out = "";
+		
 		
 		if(this.operator instanceof Abstraction){
 			if(this.operand instanceof Variable){
-				return "("+this.operator.tostring() + ")" +  this.operand.tostring();
+				out = "("+this.operator.tostring() + ")" +  this.operand.tostring();
 			}
 			else if(this.operand instanceof Abstraction){
-				return "("+this.operator.tostring() + ")" + "(" + this.operand.tostring() + ")";
+				out = "("+this.operator.tostring() + ")" + "(" + this.operand.tostring() + ")";
 			}
 			else{
-				return "("+this.operator.tostring() + ")" + this.operand.tostring();
+				out = "("+this.operator.tostring() + ")" + "(" + this.operand.tostring() + ")";
 			}
 		}
 		else if(this.operator instanceof Variable){
 			if(this.operand instanceof Variable){
-				return "("+this.operator.tostring()  +  this.operand.tostring() + ")";
+				out = this.operator.tostring()  +  this.operand.tostring();
 			}
 			else if(this.operand instanceof Abstraction){
-				return this.operator.tostring() + "(" + this.operand.tostring() + ")";
+				out = this.operator.tostring() + "(" + this.operand.tostring() + ")";
 			}
 			else{
-				return this.operator.tostring() + this.operand.tostring();
+				out = this.operator.tostring() + "(" + this.operand.tostring() + ")";
 			}
 		}
 		else{
 			if(this.operand instanceof Variable){
-				return "("+this.operator.tostring() + ")" + this.operand.tostring();
+				out = "("+this.operator.tostring() + ")" + this.operand.tostring();
 			}
 			else if(this.operand instanceof Abstraction){
-				return "(" +this.operator.tostring() + ")" + "(" + this.operand.tostring() + ")";
+				out = "(" +this.operator.tostring() + ")" + "(" + this.operand.tostring() + ")";
 			}
 			else{
-				return this.operator.tostring() + this.operand.tostring();
+				out = this.operator.tostring() + "(" + this.operand.tostring() + ")";
 			}	
 		}
+		
+		if(this.iSub != null) out += iSub.tostring();
+		
+		return out;
 		
 	}
 
@@ -74,23 +80,53 @@ public class Application implements Term {
 	}
 
 	@Override
-	public Term evaluateNormal() {
-		Term cbn = this.operator.evaluateCbn();
+	public Term evaluateNormal(boolean exsub) {
 		
+		
+		if(this.iSub != null) return this.subs(iSub.getFrom(), iSub.getTo());
+		
+		if(this.operator.getIsub() != null) return new Application(this.operator.subs(this.operator.getIsub().getFrom(), this.operator.getIsub().getTo()), this.operand);
+		
+		if(this.operand.getIsub() != null) return new Application(this.operator, operand.subs(this.operand.getIsub().getFrom(), this.operand.getIsub().getTo()));
+		
+		Term cbn = this.operator.evaluateCbn(exsub);
+		
+		System.out.println(cbn.tostring());
 		
 		if(this.operator.equals(cbn)){
 			if(cbn instanceof Abstraction){
-				Term newterm = substitution(((Abstraction)cbn).getTerm(), new Variable(((Abstraction)cbn).getName()), this.operand);
-				return newterm;
+				if(exsub){
+					Term newterm = ((Abstraction)cbn).getTerm();
+					
+					System.out.println("1" + cbn.tostring());
+					System.out.println(this.operand.getIsub() == null);
+					
+					newterm.setIntermediateSub(new IntermediateSub(new Variable(((Abstraction)cbn).getName()), this.operand));
+					
+					System.out.println("yo");
+					System.out.println(this.operand.getIsub() == null);
+					System.out.println(this.operand.tostring());
+					
+					System.out.println("cao");
+					System.out.println("2" + cbn.tostring());
+					
+					return newterm;
+					
+				}
+				else{
+					Term newterm = substitution(((Abstraction)cbn).getTerm(), new Variable(((Abstraction)cbn).getName()), this.operand);
+					return newterm;
+				}
+				
 			}
 			else{
-				return new Application(this.operator, this.operand.evaluateNormal());
+				System.out.println(this.operand.tostring());
+				return new Application(this.operator, this.operand.evaluateNormal(exsub));
 			}
 		}
 		else{
 			return new Application(cbn, this.operand);
 		}
-		
 	}
 	
 	
@@ -151,13 +187,23 @@ public class Application implements Term {
 	}
 
 	@Override
-	public Term evaluateCbn() {
-		Term cbn = this.operator.evaluateCbn();
+	public Term evaluateCbn(boolean exsub) {
+		Term cbn = this.operator.evaluateCbn(exsub);
 		
 		if(this.operator.equals(cbn)){
 			if(cbn instanceof Abstraction){
-				Term newterm = substitution(((Abstraction)cbn).getTerm(), new Variable(((Abstraction)cbn).getName()), this.operand);
-				return newterm;
+				if(exsub){
+					Term newterm = ((Abstraction)cbn).getTerm();
+					newterm.setIntermediateSub(new IntermediateSub(new Variable(((Abstraction)cbn).getName()), this.operand));
+					
+					return newterm;
+					
+				}
+				else{
+					Term newterm = substitution(((Abstraction)cbn).getTerm(), new Variable(((Abstraction)cbn).getName()), this.operand);
+					return newterm;
+				}
+				
 			}
 			else{
 				return new Application(cbn, operand);
@@ -169,16 +215,27 @@ public class Application implements Term {
 	}
 
 	@Override
-	public Term evaluateCbv() {
-		Term cbv = this.operator.evaluateCbv();
+	public Term evaluateCbv(boolean exsub) {
+		Term cbv = this.operator.evaluateCbv(exsub);
 		
 		if(this.operator.equals(cbv)){
 			if(cbv instanceof Abstraction){
-				Term newterm = substitution(((Abstraction)cbv).getTerm(), new Variable(((Abstraction)cbv).getName()), this.operand.evaluateCbv());
-				return newterm;
+				if(exsub){
+					Term newterm = ((Abstraction)cbv).getTerm();
+					newterm.setIntermediateSub(new IntermediateSub(new Variable(((Abstraction)cbv).getName()), this.operand));
+					
+					return newterm;
+					
+				}
+				else{
+					Term newterm = substitution(((Abstraction)cbv).getTerm(), new Variable(((Abstraction)cbv).getName()), this.operand.evaluateCbv(exsub));
+					return newterm;
+				}
+				
+				
 			}
 			else{
-				return new Application(cbv, this.operand.evaluateCbv());
+				return new Application(cbv, this.operand.evaluateCbv(exsub));
 			}
 			
 		}
@@ -188,14 +245,25 @@ public class Application implements Term {
 	}
 
 	@Override
-	public Term headReduction() {
-		Term hr = this.operator.headReduction();
+	public Term headReduction(boolean exsub) {
+		Term hr = this.operator.headReduction(exsub);
 
 
 		if(this.operator.equals(hr)){
 			if(hr instanceof Abstraction){
-				Term newterm = substitution(((Abstraction)hr).getTerm(), new Variable(((Abstraction)hr).getName()), this.operand);
-				return newterm;
+				if(exsub){
+					Term newterm = ((Abstraction)hr).getTerm();
+					newterm.setIntermediateSub(new IntermediateSub(new Variable(((Abstraction)hr).getName()), this.operand));
+					
+					return newterm;
+					
+				}
+				else{
+					Term newterm = substitution(((Abstraction)hr).getTerm(), new Variable(((Abstraction)hr).getName()), this.operand);
+					return newterm;
+				}
+				
+				
 			}
 			else{
 				return new Application(this.operator, this.operand);
@@ -207,21 +275,53 @@ public class Application implements Term {
 	}
 
 	@Override
-	public Term applicativeOrder() {
-		Term app = this.operator.applicativeOrder();
+	public Term applicativeOrder(boolean exsub) {
+		Term app = this.operator.applicativeOrder(exsub);
 
 
 		if(this.operator.equals(app)){
 			if(app instanceof Abstraction){
-				Term newterm = substitution(((Abstraction)app).getTerm(), new Variable(((Abstraction)app).getName()), this.operand.applicativeOrder());
-				return newterm;
+				if(exsub){
+					Term newterm = ((Abstraction)app).getTerm();
+					newterm.setIntermediateSub(new IntermediateSub(new Variable(((Abstraction)app).getName()), this.operand));
+					
+					return newterm;
+					
+				}
+				else{
+					Term newterm = substitution(((Abstraction)app).getTerm(), new Variable(((Abstraction)app).getName()), this.operand.applicativeOrder(exsub));
+					return newterm;
+				}
 			}
 			else{
-				return new Application(this.operator, this.operand.applicativeOrder());
+				return new Application(this.operator, this.operand.applicativeOrder(exsub));
 			}
 		}
 		else{
 			return new Application(app, this.operand);
 		}
+	}
+
+	@Override
+	public void setIntermediateSub(IntermediateSub isub) {
+		System.out.println("isub");
+		System.out.println("Set isub: " + this.tostring() + isub.tostring());
+		
+		this.iSub = isub;
+	}
+
+	@Override
+	public Term subs(Variable subfrom, Term subto) {
+		return new Application(this.operator.subs(subfrom, subto), this.operand.subs(subfrom, subto));
+	}
+
+	@Override
+	public IntermediateSub getIsub() {
+		return this.iSub;
+	}
+
+	@Override
+	public Term mirror() {
+		return new Application(this.operator.mirror(), this.operand.mirror());
 	}
 }
