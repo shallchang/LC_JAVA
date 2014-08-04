@@ -15,7 +15,7 @@ public class GUI extends JFrame implements ActionListener {
 	private JTextArea typeArea;
 	private JCheckBox exsubBox;
 	private String strategy = "normal order";
-	private String step = "normalize";
+	private String step = "trace";
 	
 	private Term intermediateTerm;
 	private String output = "";
@@ -65,7 +65,7 @@ public class GUI extends JFrame implements ActionListener {
 		//Create the combo box, select the item at index 0.
 		//Indices start at 0.
 		steplists = new JComboBox<>(steps);
-		steplists.setSelectedIndex(0);
+		steplists.setSelectedIndex(1);
 		steplists.addActionListener(this);
 		
 		exsubBox = new JCheckBox("explicit substitution");
@@ -185,7 +185,6 @@ public class GUI extends JFrame implements ActionListener {
 				type += ppc.getSubject().tostring() + " |- " + ppc.getPredicate().tostring() + "\n";
 			}
 			
-			
 	        typeArea.setText(type);
 	        
 	        //reduction
@@ -201,9 +200,31 @@ public class GUI extends JFrame implements ActionListener {
 	    		}catch(InterruptedException e){
 	    		}
 				
-				Term tmp = intermediateTerm; 
-		        intermediateTerm = intermediateTerm.evaluateNormal(exsub);
-		        if(tmp.equals(intermediateTerm)){
+				Term tmp = intermediateTerm.mirror(); 
+
+				System.out.println("tmp: " + tmp.tostring());
+				
+				switch (strategy) {
+				case "normal order":
+					intermediateTerm = intermediateTerm.evaluateNormal(exsub);
+					break;
+				case "call-by-name":
+					intermediateTerm = intermediateTerm.evaluateCbn(exsub);
+					break;
+				case "call-by-value":
+					intermediateTerm = intermediateTerm.evaluateCbv(exsub);
+					break;
+				case "head reduction":
+					intermediateTerm = intermediateTerm.headReduction(exsub);
+					break;
+				case "applicative order":
+					intermediateTerm = intermediateTerm.applicativeOrder(exsub);
+					break;
+				}
+				
+				System.out.println("tmp after: " + tmp.tostring());
+				
+				if(tmp.equals(intermediateTerm)){
 		        	output += "Reduced to:" + intermediateTerm.tostring();
 			        outputArea.setText(output);
 			        nextButton.setEnabled(false);
@@ -261,52 +282,53 @@ public class GUI extends JFrame implements ActionListener {
 	        
 	        if(strategy.equals("normal order")){
 	        	switch (step) {
-				case "normalize":
+	        	case "normalize":
+	        		output += newTerm.tostring()+"\n";
+	    			
+	    			//type assignment
+	    			PPC ppc = lc.ppc(newTerm, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+	    			
+	    			if(ppc == null){
+	    				type += "untypable\n";
+	    			}
+	    			else{
+	    				type += ppc.getSubject().tostring() + " |- " + ppc.getPredicate().tostring() + "\n";
+	    			}
+	    			
+	    	        typeArea.setText(type);
+	    	        
+	    	        //reduction
+	    			intermediateTerm = newTerm;
+	    			int reductionCounter = 0;
+	    			
+	    			while(true){
+	    	
+	    				Term tmp = intermediateTerm; 
+
+	    				intermediateTerm = intermediateTerm.evaluateNormal(exsub);
+	    				
+	    				if(tmp.equals(intermediateTerm)){
+	    		        	output += "Reduced to:" + intermediateTerm.tostring() + "\n";
+	    		        	
+	    		        	if(reductionCounter > 1) output += "Performed " + reductionCounter + " beta-reductions";
+	    		        	else output += "Performed " + reductionCounter + " beta-reduction";
+	    			        outputArea.setText(output);
+	    			        nextButton.setEnabled(false);
+	    			        abortButton.setEnabled(false);
+	    		        	
+	    		        	break;
+	    		        }
+	    				
+	    				if(!intermediateTerm.containsSub()) reductionCounter++;
+	    				
+	    			}
+	        	    break;
+				case "trace":
 					this.threadTerm = newTerm;
 
 					RunnableThread thread = new RunnableThread();
 					thread.start();
-					
-					/*
-					output += newTerm.tostring()+"\n";
-					
-					//type assignment
-					PPC ppc = lc.ppc(newTerm, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-					
-					System.out.println("ppc");
-					
-					if(ppc == null){
-						type += "untypable\n";
-					}
-					else{
-						type += ppc.getSubject().tostring() + " |- " + ppc.getPredicate().tostring() + "\n";
-					}
-					
-			        typeArea.setText(type);
-			        
-			        //reduction
-					intermediateTerm = newTerm;
-					
-					while(true){
-						if(abort){
-							break;
-						}
-						Term tmp = intermediateTerm; 
-				        intermediateTerm = intermediateTerm.evaluateNormal(exsub);
-				        if(tmp.equals(intermediateTerm)){
-				        	output += "Reduced to:" + intermediateTerm.tostring();
-					        outputArea.setText(output);
-					        nextButton.setEnabled(false);
-					        abortButton.setEnabled(false);
-				        	
-				        	break;
-				        }
-				        else{
-				        	output += "==> " + intermediateTerm.tostring()+"\n";
-				        	outputArea.setText(output);
-				        }	
-					}
-					*/
+	
 					break;
 				case "single step":
 					if(!abort){
@@ -337,46 +359,52 @@ public class GUI extends JFrame implements ActionListener {
 	        }
 	        else if(strategy.equals("call-by-name")){
 	        	switch (step) {
-				case "normalize":
-					System.out.println("cbn");
+	        	case "normalize":
+	        		output += newTerm.tostring()+"\n";
+	    			
+	    			//type assignment
+	    			PPC ppc = lc.ppc(newTerm, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+	    			
+	    			if(ppc == null){
+	    				type += "untypable\n";
+	    			}
+	    			else{
+	    				type += ppc.getSubject().tostring() + " |- " + ppc.getPredicate().tostring() + "\n";
+	    			}
+	    			
+	    	        typeArea.setText(type);
+	    	        
+	    	        //reduction
+	    			intermediateTerm = newTerm;
+	    			int reductionCounter = 0;
+	    			
+	    			while(true){
+	    	
+	    				Term tmp = intermediateTerm; 
+
+	    				intermediateTerm = intermediateTerm.evaluateCbn(exsub);
+	    				
+	    				if(tmp.equals(intermediateTerm)){
+	    		        	output += "Reduced to:" + intermediateTerm.tostring() + "\n";
+	    		        	
+	    		        	if(reductionCounter > 1) output += "Performed " + reductionCounter + " beta-reductions";
+	    		        	else output += "Performed " + reductionCounter + " beta-reduction";
+	    			        outputArea.setText(output);
+	    			        nextButton.setEnabled(false);
+	    			        abortButton.setEnabled(false);
+	    		        	
+	    		        	break;
+	    		        }
+	    				
+	    				reductionCounter++;
+	    			}
+	        	    break;
+				case "trace":
+					this.threadTerm = newTerm;
+
+					RunnableThread thread = new RunnableThread();
+					thread.start();
 					
-					output += newTerm.tostring()+"\n";
-					
-					//type assignment
-					PPC ppc = lc.ppc(newTerm, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-					
-					if(ppc == null){
-						type += "untypable\n";
-					}
-					else{
-						type += ppc.getSubject().tostring() + " |- " + ppc.getPredicate().tostring() + "\n";
-					}
-					
-			        typeArea.setText(type);
-			        
-			        
-			        //reduction
-					intermediateTerm = newTerm;
-					
-					while(true){
-						if(abort){
-							break;
-						}
-						Term tmp = intermediateTerm; 
-				        intermediateTerm = intermediateTerm.evaluateCbn(exsub);
-				        if(tmp.equals(intermediateTerm)){
-				        	output += "Reduced to:" + intermediateTerm.tostring();
-					        outputArea.setText(output);
-					        nextButton.setEnabled(false);
-					        abortButton.setEnabled(false);
-				        	
-				        	break;
-				        }
-				        else{
-				        	output += "==> " + intermediateTerm.tostring()+"\n";
-				        	outputArea.setText(output);
-				        }	
-					}
 					break;
 				case "single step":
 					if(!abort){
@@ -407,44 +435,52 @@ public class GUI extends JFrame implements ActionListener {
 	        }
 	        else if(strategy.equals("call-by-value")){
 	        	switch (step) {
-				case "normalize":
-					output += newTerm.tostring()+"\n";
+	        	case "normalize":
+	        		output += newTerm.tostring()+"\n";
+	    			
+	    			//type assignment
+	    			PPC ppc = lc.ppc(newTerm, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+	    			
+	    			if(ppc == null){
+	    				type += "untypable\n";
+	    			}
+	    			else{
+	    				type += ppc.getSubject().tostring() + " |- " + ppc.getPredicate().tostring() + "\n";
+	    			}
+	    			
+	    	        typeArea.setText(type);
+	    	        
+	    	        //reduction
+	    			intermediateTerm = newTerm;
+	    			int reductionCounter = 0;
+	    			
+	    			while(true){
+	    	
+	    				Term tmp = intermediateTerm; 
+
+	    				intermediateTerm = intermediateTerm.evaluateCbv(exsub);
+	    				
+	    				if(tmp.equals(intermediateTerm)){
+	    		        	output += "Reduced to:" + intermediateTerm.tostring() + "\n";
+	    		        	
+	    		        	if(reductionCounter > 1) output += "Performed " + reductionCounter + " beta-reductions";
+	    		        	else output += "Performed " + reductionCounter + " beta-reduction";
+	    			        outputArea.setText(output);
+	    			        nextButton.setEnabled(false);
+	    			        abortButton.setEnabled(false);
+	    		        	
+	    		        	break;
+	    		        }
+	    				
+	    				reductionCounter++;
+	    			}
+	        	    break;
+				case "trace":
+					this.threadTerm = newTerm;
+
+					RunnableThread thread = new RunnableThread();
+					thread.start();
 					
-					//type assignment
-					PPC ppc = lc.ppc(newTerm, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-					
-					if(ppc == null){
-						type += "untypable\n";
-					}
-					else{
-						type += ppc.getSubject().tostring() + " |- " + ppc.getPredicate().tostring() + "\n";
-					}
-					
-			        typeArea.setText(type);
-			        
-			        
-			        //reduction
-					intermediateTerm = newTerm;
-					
-					while(true){
-						if(abort){
-							break;
-						}
-						Term tmp = intermediateTerm; 
-				        intermediateTerm = intermediateTerm.evaluateCbv(exsub);
-				        if(tmp.equals(intermediateTerm)){
-				        	output += "Reduced to:" + intermediateTerm.tostring();
-					        outputArea.setText(output);
-					        nextButton.setEnabled(false);
-					        abortButton.setEnabled(false);
-				        	
-				        	break;
-				        }
-				        else{
-				        	output += "==> " + intermediateTerm.tostring()+"\n";
-				        	outputArea.setText(output);
-				        }	
-					}
 					break;
 				case "single step":
 					if(!abort){
@@ -475,46 +511,53 @@ public class GUI extends JFrame implements ActionListener {
 	        }
 	        else if(strategy.equals("head reduction")){
 	        	switch (step) {
-				case "normalize":
-					System.out.println("head");
+	        	case "normalize":
+	        		output += newTerm.tostring()+"\n";
+	    			
+	    			//type assignment
+	    			PPC ppc = lc.ppc(newTerm, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+	    			
+	    			if(ppc == null){
+	    				type += "untypable\n";
+	    			}
+	    			else{
+	    				type += ppc.getSubject().tostring() + " |- " + ppc.getPredicate().tostring() + "\n";
+	    			}
+	    			
+	    	        typeArea.setText(type);
+	    	        
+	    	        //reduction
+	    			intermediateTerm = newTerm;
+	    			int reductionCounter = 0;
+	    			
+	    			while(true){
+	    	
+	    				Term tmp = intermediateTerm; 
+
+	    				intermediateTerm = intermediateTerm.headReduction(exsub);
+	    				
+	    				if(tmp.equals(intermediateTerm)){
+	    		        	output += "Reduced to:" + intermediateTerm.tostring() + "\n";
+	    		        	
+	    		        	if(reductionCounter > 1) output += "Performed " + reductionCounter + " beta-reductions";
+	    		        	else output += "Performed " + reductionCounter + " beta-reduction";
+	    			        outputArea.setText(output);
+	    			        nextButton.setEnabled(false);
+	    			        abortButton.setEnabled(false);
+	    		        	
+	    		        	break;
+	    		        }
+	    				
+	    				reductionCounter++;
+	    			}
+	        	    break;
+				case "trace":
 					
-					output += newTerm.tostring()+"\n";
+					this.threadTerm = newTerm;
+
+					RunnableThread thread = new RunnableThread();
+					thread.start();
 					
-					//type assignment
-					PPC ppc = lc.ppc(newTerm, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-					
-					if(ppc == null){
-						type += "untypable\n";
-					}
-					else{
-						type += ppc.getSubject().tostring() + " |- " + ppc.getPredicate().tostring() + "\n";
-					}
-					
-			        typeArea.setText(type);
-			        
-			        
-			        //reduction
-					intermediateTerm = newTerm;
-					
-					while(true){
-						if(abort){
-							break;
-						}
-						Term tmp = intermediateTerm; 
-				        intermediateTerm = intermediateTerm.headReduction(exsub);
-				        if(tmp.equals(intermediateTerm)){
-				        	output += "Reduced to:" + intermediateTerm.tostring();
-					        outputArea.setText(output);
-					        nextButton.setEnabled(false);
-					        abortButton.setEnabled(false);
-				        	
-				        	break;
-				        }
-				        else{
-				        	output += "==> " + intermediateTerm.tostring()+"\n";
-				        	outputArea.setText(output);
-				        }	
-					}
 					break;
 				case "single step":
 					if(!abort){
@@ -545,45 +588,53 @@ public class GUI extends JFrame implements ActionListener {
 	        }
 	        else if(strategy.equals("applicative order")){
 	        	switch (step) {
-				case "normalize":
+	        	case "normalize":
+	        		output += newTerm.tostring()+"\n";
+	    			
+	    			//type assignment
+	    			PPC ppc = lc.ppc(newTerm, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+	    			
+	    			if(ppc == null){
+	    				type += "untypable\n";
+	    			}
+	    			else{
+	    				type += ppc.getSubject().tostring() + " |- " + ppc.getPredicate().tostring() + "\n";
+	    			}
+	    			
+	    	        typeArea.setText(type);
+	    	        
+	    	        //reduction
+	    			intermediateTerm = newTerm;
+	    			int reductionCounter = 0;
+	    			
+	    			while(true){
+	    	
+	    				Term tmp = intermediateTerm; 
+
+	    				intermediateTerm = intermediateTerm.applicativeOrder(exsub);
+	    				
+	    				if(tmp.equals(intermediateTerm)){
+	    		        	output += "Reduced to:" + intermediateTerm.tostring() + "\n";
+	    		        	
+	    		        	if(reductionCounter > 1) output += "Performed " + reductionCounter + " beta-reductions";
+	    		        	else output += "Performed " + reductionCounter + " beta-reduction";
+	    			        outputArea.setText(output);
+	    			        nextButton.setEnabled(false);
+	    			        abortButton.setEnabled(false);
+	    		        	
+	    		        	break;
+	    		        }
+	    				
+	    				reductionCounter++;
+	    			}
+	        	    break;
+				case "trace":
 					
-					output += newTerm.tostring()+"\n";
+					this.threadTerm = newTerm;
+
+					RunnableThread thread = new RunnableThread();
+					thread.start();
 					
-					//type assignment
-					PPC ppc = lc.ppc(newTerm, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-					
-					if(ppc == null){
-						type += "untypable\n";
-					}
-					else{
-						type += ppc.getSubject().tostring() + " |- " + ppc.getPredicate().tostring() + "\n";
-					}
-					
-			        typeArea.setText(type);
-			        
-			        
-			        //reduction
-					intermediateTerm = newTerm;
-					
-					while(true){
-						if(abort){
-							break;
-						}
-						Term tmp = intermediateTerm; 
-				        intermediateTerm = intermediateTerm.applicativeOrder(exsub);
-				        if(tmp.equals(intermediateTerm)){
-				        	output += "Reduced to:" + intermediateTerm.tostring();
-					        outputArea.setText(output);
-					        nextButton.setEnabled(false);
-					        abortButton.setEnabled(false);
-				        	
-				        	break;
-				        }
-				        else{
-				        	output += "==> " + intermediateTerm.tostring()+"\n";
-				        	outputArea.setText(output);
-				        }	
-					}
 					break;
 				case "single step":
 					if(!abort){
@@ -650,7 +701,6 @@ public class GUI extends JFrame implements ActionListener {
 	        	break;
 	        }
 
-	        System.out.println("hi");
 
 	        if(tmp.equals(intermediateTerm)){
 	        	output += "Reduced to:" + intermediateTerm.tostring();

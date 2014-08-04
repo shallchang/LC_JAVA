@@ -31,7 +31,6 @@ public class Application implements Term {
 	public String tostring() {
 		String out = "";
 		
-		
 		if(this.operator instanceof Abstraction){
 			if(this.operand instanceof Variable){
 				out = "("+this.operator.tostring() + ")" +  this.operand.tostring();
@@ -83,32 +82,32 @@ public class Application implements Term {
 	public Term evaluateNormal(boolean exsub) {
 		
 		
-		if(this.iSub != null) return this.subs(iSub.getFrom(), iSub.getTo());
+		if(this.iSub != null){
+			Term t = this.subs(iSub.getFrom(), iSub.getTo());
+			t.setIntermediateSub(null);
+			return t;
+		}
 		
-		if(this.operator.getIsub() != null) return new Application(this.operator.subs(this.operator.getIsub().getFrom(), this.operator.getIsub().getTo()), this.operand);
+		if(this.operator.getIsub() != null){
+			Term opr = this.operator.subs(this.operator.getIsub().getFrom(), this.operator.getIsub().getTo());
+			opr.setIntermediateSub(null);
+			
+			return new Application(opr, this.operand);
+		}
 		
-		if(this.operand.getIsub() != null) return new Application(this.operator, operand.subs(this.operand.getIsub().getFrom(), this.operand.getIsub().getTo()));
+		if(this.operand.getIsub() != null){
+			Term opr = operand.subs(this.operand.getIsub().getFrom(), this.operand.getIsub().getTo());
+			return new Application(this.operator, opr);
+		}
 		
 		Term cbn = this.operator.evaluateCbn(exsub);
-		
-		System.out.println(cbn.tostring());
 		
 		if(this.operator.equals(cbn)){
 			if(cbn instanceof Abstraction){
 				if(exsub){
 					Term newterm = ((Abstraction)cbn).getTerm();
 					
-					System.out.println("1" + cbn.tostring());
-					System.out.println(this.operand.getIsub() == null);
-					
 					newterm.setIntermediateSub(new IntermediateSub(new Variable(((Abstraction)cbn).getName()), this.operand));
-					
-					System.out.println("yo");
-					System.out.println(this.operand.getIsub() == null);
-					System.out.println(this.operand.tostring());
-					
-					System.out.println("cao");
-					System.out.println("2" + cbn.tostring());
 					
 					return newterm;
 					
@@ -179,7 +178,8 @@ public class Application implements Term {
 	@Override
 	public boolean equals(Term t) {
 		if(t instanceof Application){
-			return this.operator.equals(((Application)t).getOperator()) && this.operand.equals(((Application)t).getOperand());
+	
+			return this.operator.equals(((Application)t).getOperator()) && this.operand.equals(((Application)t).getOperand()) && (!(t.containsSub() || this.containsSub()) || (t.containsSub() && this.containsSub()));
 		}
 		else{
 			return false;
@@ -188,6 +188,13 @@ public class Application implements Term {
 
 	@Override
 	public Term evaluateCbn(boolean exsub) {
+        if(this.iSub != null) return this.subs(iSub.getFrom(), iSub.getTo());
+		
+		if(this.operator.getIsub() != null) return new Application(this.operator.subs(this.operator.getIsub().getFrom(), this.operator.getIsub().getTo()), this.operand);
+		
+		if(this.operand.getIsub() != null) return new Application(this.operator, operand.subs(this.operand.getIsub().getFrom(), this.operand.getIsub().getTo()));
+		
+		
 		Term cbn = this.operator.evaluateCbn(exsub);
 		
 		if(this.operator.equals(cbn)){
@@ -216,6 +223,12 @@ public class Application implements Term {
 
 	@Override
 	public Term evaluateCbv(boolean exsub) {
+        if(this.iSub != null) return this.subs(iSub.getFrom(), iSub.getTo());
+		
+		if(this.operator.getIsub() != null) return new Application(this.operator.subs(this.operator.getIsub().getFrom(), this.operator.getIsub().getTo()), this.operand);
+		
+		if(this.operand.getIsub() != null) return new Application(this.operator, operand.subs(this.operand.getIsub().getFrom(), this.operand.getIsub().getTo()));
+		
 		Term cbv = this.operator.evaluateCbv(exsub);
 		
 		if(this.operator.equals(cbv)){
@@ -246,6 +259,12 @@ public class Application implements Term {
 
 	@Override
 	public Term headReduction(boolean exsub) {
+        if(this.iSub != null) return this.subs(iSub.getFrom(), iSub.getTo());
+		
+		if(this.operator.getIsub() != null) return new Application(this.operator.subs(this.operator.getIsub().getFrom(), this.operator.getIsub().getTo()), this.operand);
+		
+		if(this.operand.getIsub() != null) return new Application(this.operator, operand.subs(this.operand.getIsub().getFrom(), this.operand.getIsub().getTo()));
+		
 		Term hr = this.operator.headReduction(exsub);
 
 
@@ -276,6 +295,12 @@ public class Application implements Term {
 
 	@Override
 	public Term applicativeOrder(boolean exsub) {
+        if(this.iSub != null) return this.subs(iSub.getFrom(), iSub.getTo());
+		
+		if(this.operator.getIsub() != null) return new Application(this.operator.subs(this.operator.getIsub().getFrom(), this.operator.getIsub().getTo()), this.operand);
+		
+		if(this.operand.getIsub() != null) return new Application(this.operator, operand.subs(this.operand.getIsub().getFrom(), this.operand.getIsub().getTo()));
+		
 		Term app = this.operator.applicativeOrder(exsub);
 
 
@@ -304,9 +329,6 @@ public class Application implements Term {
 
 	@Override
 	public void setIntermediateSub(IntermediateSub isub) {
-		System.out.println("isub");
-		System.out.println("Set isub: " + this.tostring() + isub.tostring());
-		
 		this.iSub = isub;
 	}
 
@@ -322,6 +344,13 @@ public class Application implements Term {
 
 	@Override
 	public Term mirror() {
-		return new Application(this.operator.mirror(), this.operand.mirror());
+		Application mirror = new Application(this.operator.mirror(), this.operand.mirror());
+		mirror.setIntermediateSub(this.iSub);
+		return mirror;
+	}
+
+	@Override
+	public boolean containsSub() {
+		return this.iSub != null || this.operator.containsSub() || this.operand.containsSub();
 	}
 }

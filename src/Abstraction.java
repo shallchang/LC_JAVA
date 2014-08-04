@@ -49,14 +49,14 @@ public class Abstraction implements Term{
 			return new Abstraction(this.name, this.toTerm.subs(iSub.getFrom(), iSub.getTo()));
 		}
 		
-		System.out.println("not sub");
-		return new Abstraction(this.name, toTerm.evaluateNormal(exsub));
+		return new Abstraction(this.name, this.toTerm.evaluateNormal(exsub));
 	}
 
 	@Override
 	public boolean equals(Term t) {
 		if(t instanceof Abstraction){
-			return this.name == ((Abstraction)t).getName() && this.toTerm.equals(((Abstraction)t).getTerm());
+			System.out.println(t.tostring() + " " + this.tostring());
+			return this.name == ((Abstraction)t).getName() && this.toTerm.equals(((Abstraction)t).getTerm()) && (!(t.containsSub() || this.containsSub()) || (t.containsSub() && this.containsSub()));
 		}
 		else{
 			return false;
@@ -67,23 +67,39 @@ public class Abstraction implements Term{
 	
 	@Override
 	public Term evaluateCbn(boolean exsub) {
+		if(this.iSub != null){
+			return new Abstraction(this.name, this.toTerm.subs(iSub.getFrom(), iSub.getTo()));
+		}
+		
 		return this;
 	}
 
 	
 	@Override
 	public Term evaluateCbv(boolean exsub) {
+		if(this.iSub != null){
+			return new Abstraction(this.name, this.toTerm.subs(iSub.getFrom(), iSub.getTo()));
+		}
+		
 		return this;
 	}
 	
 
 	@Override
 	public Term headReduction(boolean exsub) {
+		if(this.iSub != null){
+			return new Abstraction(this.name, this.toTerm.subs(iSub.getFrom(), iSub.getTo()));
+		}
+		
 		return new Abstraction(this.name, toTerm.headReduction(exsub));
 	}
 
 	@Override
 	public Term applicativeOrder(boolean exsub) {
+		if(this.iSub != null){
+			return new Abstraction(this.name, this.toTerm.subs(iSub.getFrom(), iSub.getTo()));
+		}
+		
 		return new Abstraction(this.name, toTerm.applicativeOrder(exsub));
 	}
 
@@ -104,6 +120,13 @@ public class Abstraction implements Term{
 
 	@Override
 	public Term mirror() {
-		return new Abstraction(name, toTerm.mirror());
+		Abstraction mirror = new Abstraction(name, toTerm.mirror());
+		mirror.setIntermediateSub(this.iSub);
+		return mirror;
+	}
+
+	@Override
+	public boolean containsSub() {
+		return this.iSub != null || this.toTerm.containsSub();
 	}
 }

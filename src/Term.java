@@ -12,6 +12,7 @@ public interface Term {
 	
 	public IntermediateSub getIsub();
 	
+	public void setIntermediateSub(IntermediateSub isub);
 	/**
 	 *get all the free variables of a term 
 	 */
@@ -19,12 +20,13 @@ public interface Term {
 	public ArrayList<Variable> freeVar();
 	
 	
-	public void setIntermediateSub(IntermediateSub isub);
+	
 	
 	public Term subs(Variable subfrom, Term subto);
 	
 	public Term mirror();
 	
+	public boolean containsSub();
 	/**
 	 *evaluate a term
 	 */

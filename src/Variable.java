@@ -32,10 +32,12 @@ public class Variable implements Term{
 	@Override
 	public Term evaluateNormal(boolean exsub) {
 		if(this.iSub != null){
-			if(iSub.getFrom().equals(this)){
+			if(iSub.getFrom().getName() == this.name){
 				return iSub.getTo();
 			}
 		}
+		
+		this.iSub = null;
 		
 		return this;	
 	} 
@@ -44,7 +46,7 @@ public class Variable implements Term{
 	@Override
 	public boolean equals(Term t){
 		if(t instanceof Variable){
-			return this.name == ((Variable)t).getName();
+			return this.name == ((Variable)t).getName() && (!(t.containsSub() || this.containsSub()) || (t.containsSub() && this.containsSub()));
 		}
 		else{
 			return false;
@@ -54,10 +56,12 @@ public class Variable implements Term{
 	@Override
 	public Term evaluateCbn(boolean exsub) {
 		if(this.iSub != null){
-			if(iSub.getFrom().equals(this)){
+			if(iSub.getFrom().getName() == this.name){
 				return iSub.getTo();
 			}
 		}
+		
+		this.iSub = null;
 		
 		return this;
 	}
@@ -65,10 +69,12 @@ public class Variable implements Term{
 	@Override
 	public Term evaluateCbv(boolean exsub) {
 		if(this.iSub != null){
-			if(iSub.getFrom().equals(this)){
+			if(iSub.getFrom().getName() == this.name){
 				return iSub.getTo();
 			}
 		}
+		
+		this.iSub = null;
 		
 		return this;
 	}
@@ -76,10 +82,12 @@ public class Variable implements Term{
 	@Override
 	public Term headReduction(boolean exsub) {
 		if(this.iSub != null){
-			if(iSub.getFrom().equals(this)){
+			if(iSub.getFrom().getName() == this.name){
 				return iSub.getTo();
 			}
 		}
+		
+		this.iSub = null;
 		
 		return this;
 	}
@@ -88,10 +96,12 @@ public class Variable implements Term{
 	@Override
 	public Term applicativeOrder(boolean exsub) {
 		if(this.iSub != null){
-			if(iSub.getFrom().equals(this)){
+			if(iSub.getFrom().getName() == this.name){
 				return iSub.getTo();
 			}
 		}
+		
+		this.iSub = null;
 		
 		return this;
 	}
@@ -106,6 +116,8 @@ public class Variable implements Term{
 		if(this.equals(subfrom)){
 			return subto.mirror();
 		}
+		
+		this.iSub = null;
 		return this;
 	}
 
@@ -116,6 +128,13 @@ public class Variable implements Term{
 
 	@Override
 	public Term mirror() {
-		return new Variable(name);
+		Variable mirror = new Variable(name);
+		mirror.setIntermediateSub(this.iSub);
+		return mirror;
+	}
+
+	@Override
+	public boolean containsSub() {
+		return this.iSub != null;
 	}
 }
