@@ -20,7 +20,7 @@ public class IntermediateSub {
 	
 	
 	public String tostring(){
-		return "[" + to.tostring() + "/" + from.tostring() + "]";
+		return "[" + from.tostring() + ":=" + to.tostring() + "]";
 	}
 	
 }

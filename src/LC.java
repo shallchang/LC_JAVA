@@ -332,7 +332,6 @@ public class LC {
 					System.out.println("HERE");
 					TVar f = new TVar(receiver.getCounter().substring(0, 1));
 					
-					
 					return new PPC(receiver.getSubject(), new TP(f, receiver.getPredicate()) , receiver.getCounter().substring(1));
 					
 				}

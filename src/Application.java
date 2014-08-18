@@ -236,21 +236,20 @@ public class Application implements Term {
 				if(exsub){
 					Term newterm = ((Abstraction)cbv).getTerm();
 					newterm.setIntermediateSub(new IntermediateSub(new Variable(((Abstraction)cbv).getName()), this.operand));
-					
-					return newterm;
-					
+					return newterm;	
 				}
 				else{
-					Term newterm = substitution(((Abstraction)cbv).getTerm(), new Variable(((Abstraction)cbv).getName()), this.operand.evaluateCbv(exsub));
-					return newterm;
-				}
-				
-				
+					if(this.operand.evaluateCbv(exsub).equals(this.operand)){
+						return substitution(((Abstraction)cbv).getTerm(), new Variable(((Abstraction)cbv).getName()), this.operand);
+					}
+					else{
+						return new Application(cbv, this.operand.evaluateCbv(exsub));
+					}
+				}	
 			}
 			else{
 				return new Application(cbv, this.operand.evaluateCbv(exsub));
 			}
-			
 		}
 		else{
 			return new Application(cbv, this.operand);
@@ -265,24 +264,19 @@ public class Application implements Term {
 		
 		if(this.operand.getIsub() != null) return new Application(this.operator, operand.subs(this.operand.getIsub().getFrom(), this.operand.getIsub().getTo()));
 		
-		Term hr = this.operator.headReduction(exsub);
-
+		Term hr = this.operator.evaluateCbn(exsub);
 
 		if(this.operator.equals(hr)){
 			if(hr instanceof Abstraction){
 				if(exsub){
 					Term newterm = ((Abstraction)hr).getTerm();
 					newterm.setIntermediateSub(new IntermediateSub(new Variable(((Abstraction)hr).getName()), this.operand));
-					
 					return newterm;
-					
 				}
 				else{
 					Term newterm = substitution(((Abstraction)hr).getTerm(), new Variable(((Abstraction)hr).getName()), this.operand);
 					return newterm;
 				}
-				
-				
 			}
 			else{
 				return new Application(this.operator, this.operand);

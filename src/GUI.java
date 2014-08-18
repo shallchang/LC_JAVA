@@ -1,5 +1,7 @@
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
+
 import javax.swing.*;
 
 //\f.(\x.f(xx))(\x.f(xx))
@@ -162,8 +164,28 @@ public class GUI extends JFrame implements ActionListener {
 		setVisible(true);
 	}
 	
-	private class RunnableThread extends Thread {
+	
+	public Context mergeSts(Context context){
+		ArrayList<Statement> tmp = new ArrayList<>();
+
+
 		
+		for (int i = 0; i < context.getContext().size(); i++) {
+			for(int j = i+1; j < context.getContext().size(); j++){
+				if(context.getContext().get(i).getSubject().equals(context.getContext().get(j).getSubject())){
+					tmp.add(context.getContext().get(j));
+				}
+			}
+		}
+		
+		
+		context.getContext().removeAll(tmp);
+
+		return context;
+	}
+
+	private class RunnableThread extends Thread {
+
 		public RunnableThread() {
 			
 		}
@@ -182,7 +204,7 @@ public class GUI extends JFrame implements ActionListener {
 				type += "untypable\n";
 			}
 			else{
-				type += ppc.getSubject().tostring() + " |- " + ppc.getPredicate().tostring() + "\n";
+				type += mergeSts(ppc.getSubject()).tostring() + " |- " + threadTerm.tostring() + " : " + ppc.getPredicate().tostring() + "\n";
 			}
 			
 	        typeArea.setText(type);
@@ -292,7 +314,7 @@ public class GUI extends JFrame implements ActionListener {
 	    				type += "untypable\n";
 	    			}
 	    			else{
-	    				type += ppc.getSubject().tostring() + " |- " + ppc.getPredicate().tostring() + "\n";
+	    				type += ppc.getSubject().tostring() + " |- " + newTerm.tostring() + " : " + ppc.getPredicate().tostring() + "\n";
 	    			}
 	    			
 	    	        typeArea.setText(type);
@@ -340,7 +362,7 @@ public class GUI extends JFrame implements ActionListener {
 							type += "untypable\n";
 						}
 						else{
-							type += pc.getSubject().tostring() + " |- " + pc.getPredicate().tostring() + "\n";
+							type += pc.getSubject().tostring() + " |- " + newTerm.tostring() + " : " + pc.getPredicate().tostring() + "\n";
 						}
 				        
 				        typeArea.setText(type);
@@ -369,7 +391,7 @@ public class GUI extends JFrame implements ActionListener {
 	    				type += "untypable\n";
 	    			}
 	    			else{
-	    				type += ppc.getSubject().tostring() + " |- " + ppc.getPredicate().tostring() + "\n";
+	    				type += ppc.getSubject().tostring() + " |- " + newTerm.tostring() + " : " + ppc.getPredicate().tostring() + "\n";
 	    			}
 	    			
 	    	        typeArea.setText(type);
@@ -416,7 +438,7 @@ public class GUI extends JFrame implements ActionListener {
 							type += "untypable\n";
 						}
 						else{
-							type += pc.getSubject().tostring() + " |- " + pc.getPredicate().tostring() + "\n";
+							type += pc.getSubject().tostring() + " |- " + newTerm.tostring() + " : " + pc.getPredicate().tostring() + "\n";
 						}
 				        
 				        typeArea.setText(type);
@@ -445,7 +467,7 @@ public class GUI extends JFrame implements ActionListener {
 	    				type += "untypable\n";
 	    			}
 	    			else{
-	    				type += ppc.getSubject().tostring() + " |- " + ppc.getPredicate().tostring() + "\n";
+	    				type += ppc.getSubject().tostring() + " |- " + newTerm.tostring() + " : " + ppc.getPredicate().tostring() + "\n";
 	    			}
 	    			
 	    	        typeArea.setText(type);
@@ -492,7 +514,7 @@ public class GUI extends JFrame implements ActionListener {
 							type += "untypable\n";
 						}
 						else{
-							type += pc.getSubject().tostring() + " |- " + pc.getPredicate().tostring() + "\n";
+							type += pc.getSubject().tostring() + " |- " + newTerm.tostring() + " : " + pc.getPredicate().tostring() + "\n";
 						}
 				        
 				        typeArea.setText(type);
@@ -521,7 +543,7 @@ public class GUI extends JFrame implements ActionListener {
 	    				type += "untypable\n";
 	    			}
 	    			else{
-	    				type += ppc.getSubject().tostring() + " |- " + ppc.getPredicate().tostring() + "\n";
+	    				type += ppc.getSubject().tostring() + " |- " + newTerm.tostring() + " : " + ppc.getPredicate().tostring() + "\n";
 	    			}
 	    			
 	    	        typeArea.setText(type);
@@ -569,7 +591,7 @@ public class GUI extends JFrame implements ActionListener {
 							type += "untypable\n";
 						}
 						else{
-							type += pc.getSubject().tostring() + " |- " + pc.getPredicate().tostring() + "\n";
+							type += pc.getSubject().tostring() + " |- " + newTerm.tostring() + " : " + pc.getPredicate().tostring() + "\n";
 						}
 				        
 				        typeArea.setText(type);
@@ -598,7 +620,7 @@ public class GUI extends JFrame implements ActionListener {
 	    				type += "untypable\n";
 	    			}
 	    			else{
-	    				type += ppc.getSubject().tostring() + " |- " + ppc.getPredicate().tostring() + "\n";
+	    				type += ppc.getSubject().tostring() + " |- " + newTerm.tostring() + " : " + ppc.getPredicate().tostring() + "\n";
 	    			}
 	    			
 	    	        typeArea.setText(type);
@@ -646,7 +668,7 @@ public class GUI extends JFrame implements ActionListener {
 							type += "untypable\n";
 						}
 						else{
-							type += pc.getSubject().tostring() + " |- " + pc.getPredicate().tostring() + "\n";
+							type += pc.getSubject().tostring() + " |- " + newTerm.tostring() + " : " + pc.getPredicate().tostring() + "\n";
 						}
 				        
 				        typeArea.setText(type);
@@ -676,7 +698,7 @@ public class GUI extends JFrame implements ActionListener {
 				type += "untypable\n";
 			}
 			else{
-				type += pc.getSubject().tostring() + " |- " + pc.getPredicate().tostring() + "\n";
+				type += pc.getSubject().tostring() + " |- " + tmp.tostring() + " : " + pc.getPredicate().tostring() + "\n";
 			}
 			
 	        
