@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.Scanner;
-
+import Lambda.*;
+import TypeAssignment.*;
 
 public class LC {
 	
@@ -16,7 +17,14 @@ public class LC {
         Term newTerm = lc.toTerm(input);
         
         System.out.println(newTerm.tostring());
-       
+        
+        while(!newTerm.evaluateNormal(true).equals(newTerm)){
+        	newTerm = newTerm.evaluateNormal(true);
+        	System.out.println(newTerm.tostring());
+        }
+        
+        
+       /*
         PPC ppc = lc.ppc(newTerm, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
 		
 		if(ppc == null){
@@ -25,6 +33,7 @@ public class LC {
 		else{
 			System.out.println(ppc.getSubject().tostring() + " |- " + ppc.getPredicate().tostring() + "\n");
 		}
+		*/
         
         
 	}
@@ -340,7 +349,7 @@ public class LC {
 				return null;
 			}
 		}
-		else{
+		else if(term instanceof Application){
 			TVar f = new TVar(counter.substring(0,1));
 			
 			PPC receiver1 = ppc(((Application)term).getOperator(), counter.substring(1));
@@ -370,8 +379,51 @@ public class LC {
 			Context union = new Context(tmp);
 			
 			
-			return new PPC(contextSubs(s2, contextSubs(s1, union)), typeSubs(s2, typeSubs(s1, f)), receiver2.getCounter());
+			return new PPC(contextSubs(s2, contextSubs(s1, union)), typeSubs(s2, typeSubs(s1, f)), receiver2.getCounter());	
+		}
+		else{//it is an explicit substitution term as M<x:=N>
+			//ppc M, saved in container
+            PPC receiverM = ppc(((XSub)term).getTerm(), counter);
 			
+			if(receiverM == null) return null;
+			
+			//ppc N, saved in container
+			PPC receiverN = ppc(((XSub)term).getTo(), receiverM.getCounter());
+			
+			if(receiverN == null) return null;
+			
+			
+			//type get the type of x, if x is untyped, type it to a fresh type
+		    Type c = null;
+			
+			
+			for(Variable var: ((XSub)term).getTerm().freeVar()){
+				if(var.equals(((XSub)term).getFrom())){
+					c = search(var, receiverM.getSubject()).getPredicate();
+					break;
+				}
+			}
+			
+			if(c == null){
+				c = new TVar(receiverN.getCounter().substring(0,1));
+			}
+			
+			// s1 and s2
+            TSub s1 = unify(receiverN.getPredicate(), c);
+			
+			if(s1 == null) return null;
+			
+			TSub s2 = unifyContext(contextSubs(s1, receiverM.getSubject()), contextSubs(s1, receiverN.getSubject()));
+			
+			if(s2 == null) return null;
+			
+			//unione Gamma_1 and Gamma_2
+			ArrayList<Statement> tmp = receiverM.getSubject().getContext();
+			tmp.addAll(receiverN.getSubject().getContext());
+			Context union = new Context(tmp);
+			
+			//return S2 0 S1 <union, A>
+			return new PPC(contextSubs(s2, contextSubs(s1, union)), typeSubs(s2, typeSubs(s1, receiverM.getPredicate())), receiverN.getCounter().substring(1));	
 		}
 		
 	}
