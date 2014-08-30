@@ -59,6 +59,7 @@ public class XSub implements Term{
 
 	@Override
 	public Term evaluateNormal(boolean exsub) {
+		/*
 		boolean b = false;
 
 		if(term instanceof Variable){
@@ -113,6 +114,25 @@ public class XSub implements Term{
 				return this.term;
 			}
 
+		}
+		*/
+		if(term instanceof Variable){
+			if(term.equals(this.from)) return this.to;
+			else return this.term;
+		}
+		else if(this.term instanceof Abstraction){
+			return new Abstraction(((Abstraction) term).getName(), new XSub(((Abstraction) term).getTerm(), from, to));
+
+		}
+		else if(this.term instanceof Application){
+			XSub sub1 = new XSub(((Application) term).getOperator(), from, to);
+			XSub sub2 = new XSub(((Application) term).getOperand(), from, to);
+
+			return new Application(sub1, sub2);
+
+		}
+		else{
+			return new XSub(this.term.evaluateNormal(exsub), from, to);
 		}
 	}
 
