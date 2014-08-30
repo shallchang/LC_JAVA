@@ -9,6 +9,7 @@ package Lambda;
 import java.util.ArrayList;
 
 //(\abc.ac(bc))(\xy.x)
+//(\a.a)(\b.b)((\x.x)(\y.(\z.z)w))
 public class Application implements Term {
 	
 	private Term operator;
@@ -132,8 +133,19 @@ public class Application implements Term {
 			else if(y.equals(subfrom)){
 				return original;
 			}
-			else if(fv && !y.equals(subfrom)){
-				return new Abstraction('z', substitution(substitution(((Abstraction)original).getTerm(), y , new Variable('z')), subfrom, subto));
+			else if(fv && !y.equals(subfrom)){ //alpha-conversion
+				String name = ((Abstraction)original).getName();
+				
+				if(name.length() > 1){ //not only a character, but with a number following it which means already alpha-converted. y1
+					int number = Integer.parseInt(name.substring(1))+1;
+					String newname = name.substring(0, 1)+number;
+					return new Abstraction(newname, substitution(substitution(((Abstraction)original).getTerm(), y , new Variable(newname)), subfrom, subto));	
+				}
+				else{ //only a character
+					String newname = name+1;
+
+					return new Abstraction(newname, substitution(substitution(((Abstraction)original).getTerm(), y , new Variable(newname)), subfrom, subto));
+				}
 			}
 			else{
 				throw new IllegalArgumentException("not in condition");
@@ -144,6 +156,10 @@ public class Application implements Term {
 			Term t1 = substitution(app.getOperator(), subfrom, subto);
 			Term t2 = substitution(app.getOperand(), subfrom, subto);
 			return (new Application(t1, t2));
+		}
+		else if(original instanceof XSub){
+			Term term = substitution(((XSub) original).getTerm(), subfrom, subto);
+			return new XSub(term, ((XSub) original).getFrom(), ((XSub) original).getTo());
 		}
 		else{
 			throw new IllegalArgumentException("None type");
@@ -164,55 +180,51 @@ public class Application implements Term {
 
 	@Override
 	public Term evaluateCbn(boolean exsub) {
-		Term cbn = this.operator.evaluateCbn(exsub);
-		
-		if(this.operator.equals(cbn)){
-			if(cbn instanceof Abstraction){  //the operator is an abstraction, so the substitution could take place
-				if(exsub){ //use explicit substitution, return a new XSub
-					return new XSub(((Abstraction) cbn).getTerm(), new Variable(((Abstraction) cbn).getName()), this.operand);
-				}
-				else{ // disabled explicit substitution, do the substitution directly
-					return substitution(((Abstraction)cbn).getTerm(), new Variable(((Abstraction)cbn).getName()), this.operand);
-				}
+		if(this.operator instanceof Abstraction){  //the operator is an abstraction, so the substitution could take place
+			if(exsub){ //use explicit substitution, return a new XSub
+				return new XSub(((Abstraction) this.operator).getTerm(), new Variable(((Abstraction) this.operator).getName()), this.operand);
 			}
-			else{
-				return new Application(cbn, operand);
+			else{ // disabled explicit substitution, do the substitution directly
+				return substitution(((Abstraction)this.operator).getTerm(), new Variable(((Abstraction)this.operator).getName()), this.operand);
 			}
 		}
 		else{
-			return new Application(cbn, this.operand);
+			if(this.operator.evaluateCbn(exsub).equals(this.operator)){
+				return new Application(this.operator, this.operand);
+			}
+			else{
+				return new Application(this.operator.evaluateCbn(exsub), this.operand);
+			}
 		}
 	}
 
 	@Override
 	public Term evaluateCbv(boolean exsub) {
-		Term cbv = this.operator.evaluateCbv(exsub);
-		
-		if(this.operator.equals(cbv)){
-			if(cbv instanceof Abstraction){
-				if(exsub){
-					if(this.operand.evaluateCbv(exsub).equals(this.operand)){
-						return new XSub(((Abstraction) cbv).getTerm(), new Variable(((Abstraction) cbv).getName()), this.operand);
-					}
-					else{
-						return new Application(cbv, this.operand.evaluateCbv(exsub));
-					}
+		if(this.operator instanceof Abstraction){  //the operator is an abstraction, so the substitution could take place
+			if(exsub){ //use explicit substitution, return a new XSub
+				if(this.operand.evaluateCbv(exsub).equals(this.operand)){
+					return new XSub(((Abstraction) this.operator).getTerm(), new Variable(((Abstraction) this.operator).getName()), this.operand);
 				}
 				else{
-					if(this.operand.evaluateCbv(exsub).equals(this.operand)){
-						return substitution(((Abstraction)cbv).getTerm(), new Variable(((Abstraction)cbv).getName()), this.operand);
-					}
-					else{
-						return new Application(cbv, this.operand.evaluateCbv(exsub));
-					}
-				}	
+					return new Application(this.operator, this.operand.evaluateCbv(exsub));
+				}
 			}
-			else{
-				return new Application(cbv, this.operand.evaluateCbv(exsub));
+			else{ // disabled explicit substitution, do the substitution directly
+				if(this.operand.evaluateCbv(exsub).equals(this.operand)){
+					return substitution(((Abstraction)this.operator).getTerm(), new Variable(((Abstraction)this.operator).getName()), this.operand);
+				}
+				else{
+					return new Application(this.operator, this.operand.evaluateCbv(exsub));
+				}
 			}
 		}
 		else{
-			return new Application(cbv, this.operand);
+			if(this.operator.evaluateCbv(exsub).equals(this.operator)){
+				return new Application(this.operator, this.operand.evaluateCbv(exsub));
+			}
+			else{
+				return new Application(this.operator.evaluateCbv(exsub), this.operand);
+			}
 		}			
 	}
 

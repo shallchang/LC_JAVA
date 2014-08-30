@@ -5,19 +5,19 @@ import java.util.ArrayList;
 
 public class Variable implements Term{
 
-	private char name;
+	private String name;
 	
-	public Variable(char name){
+	public Variable(String name){
 		this.name = name;
 	}
 	
-	public char getName(){
+	public String getName(){
 		return this.name;
 	}
 	
 	@Override
 	public String tostring() {
-		return Character.toString(this.name);
+		return this.name;
 	}
 
 	
@@ -37,7 +37,7 @@ public class Variable implements Term{
 	@Override
 	public boolean equals(Term t){
 		if(t instanceof Variable){
-			return this.name == ((Variable)t).getName();
+			return this.name.equals(((Variable)t).getName());
 		}
 	    return false;
 	}
@@ -74,7 +74,7 @@ public class Variable implements Term{
 
 	@Override
 	public Term mirror() {
-		Variable mirror = new Variable(name);
+		Variable mirror = new Variable(this.name);
 		return mirror;
 	}
 

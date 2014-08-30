@@ -54,7 +54,7 @@ public class LC {
 	public Term toVar(String input){
 		if(input.length() == 1){
 			//System.out.println("New var: " + input);
-			return new Variable(input.charAt(0));
+			return new Variable(input);
 		}
 		else{
 			throw new IllegalArgumentException("Invalid variable");
@@ -72,7 +72,7 @@ public class LC {
 			}
 		}
 		else{
-			return new Abstraction(input.charAt(0), toAbs(input.substring(1)));	
+			return new Abstraction(input.substring(0, 1), toAbs(input.substring(1)));	
 		}
 	}
 	
@@ -288,7 +288,7 @@ public class LC {
 				return sts;
 			}
 		}
-		return new Statement(new Variable(' ' ), new TVar(""));
+		return new Statement(new Variable(""), new TVar(""));
 	}
 	
 	

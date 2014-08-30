@@ -59,7 +59,7 @@ public class XSub implements Term{
 
 	@Override
 	public Term evaluateNormal(boolean exsub) {
-		/*
+
 		boolean b = false;
 
 		if(term instanceof Variable){
@@ -75,7 +75,35 @@ public class XSub implements Term{
 			}
 
 			if(b){
-				return new Abstraction(((Abstraction) term).getName(), new XSub(((Abstraction) term).getTerm(), from, to));
+				boolean a = false;
+
+				for(Variable var: this.to.freeVar()){
+					if(var.getName().equals(((Abstraction)this.term).getName())){
+						a = true;
+						break;
+					}
+				}
+
+				if(a){
+					String name = ((Abstraction)this.term).getName();
+					Application tmp = new Application(new Variable(""), new Variable(""));
+
+					if(name.length() > 1){ //not only a character, but with a number following it which means already alpha-converted. y1
+						int number = Integer.parseInt(name.substring(1))+1;
+						String newname = name.substring(0, 1)+number;
+
+
+						return new Abstraction(newname, new XSub(tmp.substitution(((Abstraction)this.term).getTerm(),  new Variable(((Abstraction)this.term).getName()), new Variable(newname)), from, to));	
+					}
+					else{ //only a character
+						String newname = name+1;
+
+						return new Abstraction(newname, new XSub(tmp.substitution(((Abstraction)this.term).getTerm(),  new Variable(((Abstraction)this.term).getName()), new Variable(newname)), from, to));
+					}
+				}
+				else{
+					return new Abstraction(((Abstraction) term).getName(), new XSub(((Abstraction) term).getTerm(), from, to));
+				}
 			}
 			else{
 				return this.term;
@@ -115,14 +143,43 @@ public class XSub implements Term{
 			}
 
 		}
-		*/
+
+		
+		/*
 		if(term instanceof Variable){
 			if(term.equals(this.from)) return this.to;
 			else return this.term;
 		}
 		else if(this.term instanceof Abstraction){
-			return new Abstraction(((Abstraction) term).getName(), new XSub(((Abstraction) term).getTerm(), from, to));
-
+			boolean b=false;
+			
+			for(Variable var: this.to.freeVar()){
+				if(var.getName().equals(((Abstraction)this.term).getName())){
+					b = true;
+					break;
+				}
+			}
+			
+			if(b){
+                String name = ((Abstraction)this.term).getName();
+                Application tmp = new Application(new Variable(""), new Variable(""));
+                
+				if(name.length() > 1){ //not only a character, but with a number following it which means already alpha-converted. y1
+					int number = Integer.parseInt(name.substring(1))+1;
+					String newname = name.substring(0, 1)+number;
+					
+					
+					return new Abstraction(newname, new XSub(tmp.substitution(((Abstraction)this.term).getTerm(),  new Variable(((Abstraction)this.term).getName()), new Variable(newname)), from, to));	
+				}
+				else{ //only a character
+					String newname = name+1;
+				
+					return new Abstraction(newname, new XSub(tmp.substitution(((Abstraction)this.term).getTerm(),  new Variable(((Abstraction)this.term).getName()), new Variable(newname)), from, to));
+			    }
+			}
+			else{
+				return new Abstraction(((Abstraction) term).getName(), new XSub(((Abstraction) term).getTerm(), from, to));
+			}
 		}
 		else if(this.term instanceof Application){
 			XSub sub1 = new XSub(((Application) term).getOperator(), from, to);
@@ -134,6 +191,7 @@ public class XSub implements Term{
 		else{
 			return new XSub(this.term.evaluateNormal(exsub), from, to);
 		}
+		*/
 	}
 
 	@Override

@@ -4,10 +4,10 @@ import java.util.ArrayList;
 
 public class Abstraction implements Term{
 
-	private char name;
+	private String name;
 	private Term toTerm;
 	
-	public Abstraction(char name, Term toTerm){
+	public Abstraction(String name, Term toTerm){
 		this.name = name;
 		this.toTerm = toTerm;
 	}
@@ -16,7 +16,7 @@ public class Abstraction implements Term{
 		return this.toTerm;
 	}
 	
-	public char getName(){
+	public String getName(){
 		return this.name;
 	}
 	
@@ -33,7 +33,7 @@ public class Abstraction implements Term{
 		ArrayList<Variable> toRemove = new ArrayList<>();
 		
 		for (Variable var : free) {
-			if(var.getName() == this.name){
+			if(var.getName().equals(this.name)){
 				toRemove.add(var);
 			}
 		}
@@ -51,12 +51,11 @@ public class Abstraction implements Term{
 	public boolean equals(Term t) {
 		if(t instanceof Abstraction){
 			System.out.println(t.tostring() + " " + this.tostring());
-			return this.name == ((Abstraction)t).getName() && this.toTerm.equals(((Abstraction)t).getTerm());
+			return this.name.equals(((Abstraction)t).getName()) && this.toTerm.equals(((Abstraction)t).getTerm());
 		}
 		else{
 			return false;
-		}
-		
+		}	
 	}
 
 	
