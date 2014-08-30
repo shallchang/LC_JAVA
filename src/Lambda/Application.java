@@ -230,45 +230,51 @@ public class Application implements Term {
 
 	@Override
 	public Term headReduction(boolean exsub) {
-		Term hr = this.operator.evaluateCbn(exsub);
-
-		if(this.operator.equals(hr)){
-			if(hr instanceof Abstraction){
-				if(exsub){
-					return new XSub(((Abstraction) hr).getTerm(), new Variable(((Abstraction) hr).getName()), this.operand);
-				}
-				else{
-					return substitution(((Abstraction)hr).getTerm(), new Variable(((Abstraction)hr).getName()), this.operand);
-				}
+		if(this.operator instanceof Abstraction){  //the operator is an abstraction, so the substitution could take place
+			if(exsub){ //use explicit substitution, return a new XSub
+				return new XSub(((Abstraction) this.operator).getTerm(), new Variable(((Abstraction) this.operator).getName()), this.operand);
 			}
-			else{
-				return new Application(this.operator, this.operand);
+			else{ // disabled explicit substitution, do the substitution directly
+				return substitution(((Abstraction)this.operator).getTerm(), new Variable(((Abstraction)this.operator).getName()), this.operand);
 			}
 		}
 		else{
-			return new Application(hr, this.operand);
+			if(this.operator.headReduction(exsub).equals(this.operator)){
+				return new Application(this.operator, this.operand);
+			}
+			else{
+				return new Application(this.operator.headReduction(exsub), this.operand);
+			}
 		}
 	}
 
 	@Override
 	public Term applicativeOrder(boolean exsub) {
-		Term app = this.operator.applicativeOrder(exsub);
-
-		if(this.operator.equals(app)){
-			if(app instanceof Abstraction){
-				if(exsub){
-					return new XSub(((Abstraction) app).getTerm(), new Variable(((Abstraction) app).getName()), this.operand);	
+		if(this.operator instanceof Abstraction){  //the operator is an abstraction, so the substitution could take place
+			if(this.operator.applicativeOrder(exsub).equals(this.operator)){
+				if(this.operand.applicativeOrder(exsub).equals(this.operand)){
+					if(exsub){ //use explicit substitution, return a new XSub
+						return new XSub(((Abstraction) this.operator).getTerm(), new Variable(((Abstraction) this.operator).getName()), this.operand);
+					}
+					else{ // disabled explicit substitution, do the substitution directly
+						return substitution(((Abstraction)this.operator).getTerm(), new Variable(((Abstraction)this.operator).getName()), this.operand);
+					}
 				}
 				else{
-					return substitution(((Abstraction)app).getTerm(), new Variable(((Abstraction)app).getName()), this.operand.applicativeOrder(exsub));
+					return new Application(this.operator, this.operand.applicativeOrder(exsub));
 				}
+			}
+			else{
+				return new Application(this.operator.applicativeOrder(exsub), this.operand);
+			}
+		}
+		else{
+			if(this.operand.applicativeOrder(exsub).equals(this.operand)){
+				return new Application(this.operator.applicativeOrder(exsub), this.operand);
 			}
 			else{
 				return new Application(this.operator, this.operand.applicativeOrder(exsub));
 			}
-		}
-		else{
-			return new Application(app, this.operand);
 		}
 	}
 
