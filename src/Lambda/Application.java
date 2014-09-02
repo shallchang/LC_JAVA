@@ -85,27 +85,6 @@ public class Application implements Term {
 		return free;
 	}
 
-	@Override
-	public Term evaluateNormal(boolean exsub) {
-		if(this.operator instanceof Abstraction){  //the operator is an abstraction, so the substitution could take place
-			if(exsub){ //use explicit substitution, return a new XSub
-				return new XSub(((Abstraction) this.operator).getTerm(), new Variable(((Abstraction) this.operator).getName()), this.operand);
-			}
-			else{ // disabled explicit substitution, do the substitution directly
-				return substitution(((Abstraction) this.operator).getTerm(), new Variable(((Abstraction) this.operator).getName()), this.operand);
-			}
-		}
-		else{
-			if(this.operator.evaluateNormal(exsub).equals(this.operator)){
-				return new Application(this.operator, this.operand.evaluateNormal(exsub));
-			}
-			else{
-				return new Application(this.operator.evaluateNormal(exsub), this.operand);
-			}
-		}
-	}
-
-
 	public Term substitution(Term original, Variable subfrom, Term subto){
 		if(original instanceof Variable){
 			if(((Variable)original).equals(subfrom)){
@@ -177,6 +156,26 @@ public class Application implements Term {
 			return false;
 		}
 	}
+	
+	@Override
+	public Term evaluateNormal(boolean exsub) {
+		if(this.operator instanceof Abstraction){  //the operator is an abstraction, so the substitution could take place
+			if(exsub){ //use explicit substitution, return a new XSub
+				return new XSub(((Abstraction) this.operator).getTerm(), new Variable(((Abstraction) this.operator).getName()), this.operand);
+			}
+			else{ // disabled explicit substitution, do the substitution directly
+				return substitution(((Abstraction) this.operator).getTerm(), new Variable(((Abstraction) this.operator).getName()), this.operand);
+			}
+		}
+		else{
+			if(this.operator.evaluateNormal(exsub).equals(this.operator)){
+				return new Application(this.operator, this.operand.evaluateNormal(exsub));
+			}
+			else{
+				return new Application(this.operator.evaluateNormal(exsub), this.operand);
+			}
+		}
+	}
 
 	@Override
 	public Term evaluateCbn(boolean exsub) {
@@ -210,7 +209,7 @@ public class Application implements Term {
 				}
 			}
 			else{ // disabled explicit substitution, do the substitution directly
-				if(this.operand.evaluateCbv(exsub).equals(this.operand)){
+				if(this.operand.evaluateCbv(exsub).equals(this.operand)){//reduce the argument first
 					return substitution(((Abstraction)this.operator).getTerm(), new Variable(((Abstraction)this.operator).getName()), this.operand);
 				}
 				else{

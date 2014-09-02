@@ -173,8 +173,6 @@ public class GUI extends JFrame implements ActionListener {
 	
 	public Context mergeSts(Context context){
 		ArrayList<Statement> tmp = new ArrayList<>();
-
-
 		
 		for (int i = 0; i < context.getContext().size(); i++) {
 			for(int j = i+1; j < context.getContext().size(); j++){

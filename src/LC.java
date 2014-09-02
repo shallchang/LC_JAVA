@@ -338,7 +338,7 @@ public class LC {
 					
 				}
 				else{
-					System.out.println("HERE");
+				
 					TVar f = new TVar(receiver.getCounter().substring(0, 1));
 					
 					return new PPC(receiver.getSubject(), new TP(f, receiver.getPredicate()) , receiver.getCounter().substring(1));
@@ -360,11 +360,7 @@ public class LC {
 			
 			if(receiver2 == null) return null;
 			
-			
-			System.out.println(receiver1.getSubject().tostring());
-			System.out.println(receiver2.getSubject().tostring());
-			
-			
+
 			TSub s1 = unify(receiver1.getPredicate(), new TP(receiver2.getPredicate(), f));
 			
 			if(s1 == null) return null;
@@ -400,6 +396,26 @@ public class LC {
 			for(Variable var: ((XSub)term).getTerm().freeVar()){
 				if(var.equals(((XSub)term).getFrom())){
 					c = search(var, receiverM.getSubject()).getPredicate();
+					
+					 
+					ArrayList<Statement> tmp = new ArrayList<>();
+					
+					for (int i = 0; i < receiverM.getSubject().getContext().size(); i++) {
+						for(int j = i+1; j < receiverM.getSubject().getContext().size(); j++){
+							if(receiverM.getSubject().getContext().get(i).getSubject().equals(receiverM.getSubject().getContext().get(j).getSubject())){
+								tmp.add(receiverM.getSubject().getContext().get(j));
+							}
+						}
+					}
+					
+					
+					//context.getContext().removeAll(tmp);
+					
+					receiverM.getSubject().getContext().removeAll(tmp);
+					
+					
+					receiverM.getSubject().getContext().remove(search(var, receiverM.getSubject()));
+					
 					break;
 				}
 			}

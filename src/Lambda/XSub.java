@@ -91,8 +91,6 @@ public class XSub implements Term{
 					if(name.length() > 1){ //not only a character, but with a number following it which means already alpha-converted. y1
 						int number = Integer.parseInt(name.substring(1))+1;
 						String newname = name.substring(0, 1)+number;
-
-
 						return new Abstraction(newname, new XSub(tmp.substitution(((Abstraction)this.term).getTerm(),  new Variable(((Abstraction)this.term).getName()), new Variable(newname)), from, to));	
 					}
 					else{ //only a character
@@ -143,7 +141,6 @@ public class XSub implements Term{
 			}
 
 		}
-
 		
 		/*
 		if(term instanceof Variable){
